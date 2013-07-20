@@ -1,7 +1,5 @@
-NOT WORKING JUST YET
-
 ofxONI1_5
-=========
+=======
 
 A simple wrapper around OpenNI 1.5 and NiTE 1.5 to use in ofxReprojection. Implements similar functionality as ofxKinect. 
 
@@ -11,3 +9,4 @@ Features:
 * TODO: Grayscale depth image.
 * TODO: Optional NiTE integration (mainly User Tracker).
 * TODO: 3D rendering (using vertex shader).
+
