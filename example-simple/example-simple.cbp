@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="example-simple" />
+		<Option makefile_is_custom="1" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Option virtualFolders="addons/;src/;build config/;addons/ofxONI1_5/libs/NITEOpenNI/include/;addons/ofxONI1_5/libs/NITEOpenNI/include/Linux-x86/;addons/ofxONI1_5/src/;" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/$(PROJECT_NAME)_debug" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin" />
+				<Option object_output="obj/Debug/" />
+				<Option external_deps="../../../libs/openFrameworksCompiled/lib/linux/libopenFrameworksDebug.a;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+			</Target>
+			<Target title="Release">
+				<Option output="bin/$(PROJECT_NAME)" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="bin" />
+				<Option object_output="obj/Release/" />
+				<Option external_deps="../../../libs/openFrameworksCompiled/lib/linux/libopenFrameworks.a;" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+			</Target>
+		</Build>
+		<Unit filename="config.make">
+			<Option virtualFolder="build config" />
+		</Unit>
+		<Unit filename="src/main.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/testApp.cpp">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="src/testApp.h">
+			<Option virtualFolder="src/" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/IXnNodeAllocator.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/Linux-x86/XnOSLinux-x86.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include/Linux-x86" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/Linux-x86/XnPlatformLinux-x86.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include/Linux-x86" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnBaseNode.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnCallback.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnCodecIDs.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnContext.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnCppWrapper.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnDataTypes.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnEnumerationErrors.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnEvent.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnFPSCalculator.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnGeneralBuffer.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnHash.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnInternalDefs.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnLicensing.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnList.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnLog.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnMacros.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnModuleCppInterface.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnModuleCppRegistratration.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnModuleInterface.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnNode.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnNodeAllocator.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnOS.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnOSCpp.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnOpenNI.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnPlatform.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnPrdNode.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnPrdNodeInfo.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnPrdNodeInfoList.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnProfiling.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnPropNames.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnQueries.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnQueue.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnScheduler.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnStack.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnStatus.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnStatusCodes.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnStatusRegister.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnStringsHash.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnThreadSafeQueue.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnTypes.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnUSB.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnUtils.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/libs/NITEOpenNI/include/XnVersion.h">
+			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/src/ofxBase3DVideo.h">
+			<Option virtualFolder="addons/ofxONI1_5/src" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI1_5.cpp">
+			<Option virtualFolder="addons/ofxONI1_5/src" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI1_5.h">
+			<Option virtualFolder="addons/ofxONI1_5/src" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI2.cpp">
+			<Option virtualFolder="addons/ofxONI1_5/src" />
+		</Unit>
+		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI2.h">
+			<Option virtualFolder="addons/ofxONI1_5/src" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
