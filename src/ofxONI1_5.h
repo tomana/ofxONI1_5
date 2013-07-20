@@ -24,6 +24,7 @@ static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID
 {
 	printf("New User %d\n", nId);
 	// New user found
+
 	if (g_bNeedPose)
 	{
 		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
