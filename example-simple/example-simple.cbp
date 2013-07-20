@@ -178,19 +178,13 @@
 			<Option virtualFolder="addons/ofxONI1_5/libs/NITEOpenNI/include" />
 		</Unit>
 		<Unit filename="../../../addons/ofxONI1_5/src/ofxBase3DVideo.h">
-			<Option virtualFolder="addons/ofxONI1_5/src" />
+			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI1_5.cpp">
-			<Option virtualFolder="addons/ofxONI1_5/src" />
+			<Option virtualFolder="src/" />
 		</Unit>
 		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI1_5.h">
-			<Option virtualFolder="addons/ofxONI1_5/src" />
-		</Unit>
-		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI2.cpp">
-			<Option virtualFolder="addons/ofxONI1_5/src" />
-		</Unit>
-		<Unit filename="../../../addons/ofxONI1_5/src/ofxONI2.h">
-			<Option virtualFolder="addons/ofxONI1_5/src" />
+			<Option virtualFolder="src/" />
 		</Unit>
 		<Extensions>
 			<code_completion />
