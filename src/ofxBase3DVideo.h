@@ -19,7 +19,11 @@
     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     THE SOFTWARE.
+<<<<<<< HEAD
 
+=======
+    
+>>>>>>> eed756a3fb4df7a6e197b27dd45a7448a7843de4
 ==============================================================================*/
 #pragma once
 
@@ -27,6 +31,7 @@
 ///
 /// a base class for 3D video devices
 class ofxBase3DVideo: public ofBaseVideo {
+<<<<<<< HEAD
 public:
 
     /// get the pixels of the most recent depth frame
@@ -35,6 +40,17 @@ public:
     /// get the distance in millimeters to a given point as a float array
     virtual float* getDistancePixels()=0;
 
+=======
+
+public:
+    
+    /// get the pixels of the most recent depth frame
+    virtual unsigned char* getDepthPixels()=0;
+    
+    /// get the distance in millimeters to a given point as a float array
+    virtual float* getDistancePixels()=0;
+    
+>>>>>>> eed756a3fb4df7a6e197b27dd45a7448a7843de4
     /// get the grayscale depth texture
     virtual ofTexture& getDepthTextureReference()=0;
 };

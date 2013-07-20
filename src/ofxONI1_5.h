@@ -23,8 +23,12 @@ static XnChar g_strPose[20] = "";
 static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
 {
 	printf("New User %d\n", nId);
+<<<<<<< HEAD
 	// New user found
 
+=======
+	// New user found
+>>>>>>> eed756a3fb4df7a6e197b27dd45a7448a7843de4
 	if (g_bNeedPose)
 	{
 		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);

@@ -23,7 +23,10 @@ bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth
 	printf("InitFromXmlFile\n");
 	nRetVal = g_Context.InitFromXmlFile(SAMPLE_XML_PATH);
 	CHECK_RC(nRetVal, "InitFromXml");
+<<<<<<< HEAD
 
+=======
+>>>>>>> eed756a3fb4df7a6e197b27dd45a7448a7843de4
 }
 
 bool ofxONI1_5::open()
