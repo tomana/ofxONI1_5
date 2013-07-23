@@ -1,26 +1,24 @@
-/*****************************************************************************
-*                                                                            *
-*  OpenNI 1.0 Alpha                                                          *
-*  Copyright (C) 2010 PrimeSense Ltd.                                        *
-*                                                                            *
-*  This file is part of OpenNI.                                              *
-*                                                                            *
-*  OpenNI is free software: you can redistribute it and/or modify            *
-*  it under the terms of the GNU Lesser General Public License as published  *
-*  by the Free Software Foundation, either version 3 of the License, or      *
-*  (at your option) any later version.                                       *
-*                                                                            *
-*  OpenNI is distributed in the hope that it will be useful,                 *
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              *
-*  GNU Lesser General Public License for more details.                       *
-*                                                                            *
-*  You should have received a copy of the GNU Lesser General Public License  *
-*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.            *
-*                                                                            *
-*****************************************************************************/
-
-
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
 #ifndef __XN_PROP_NAMES_H__
 #define __XN_PROP_NAMES_H__
 
@@ -33,12 +31,14 @@
 #define XN_PROP_TIMESTAMP "xnTimeStamp" //int
 #define XN_PROP_FRAME_ID "xnFrameID" //int
 #define XN_PROP_NEWDATA "xnNewData" //general. Meant only for mock nodes.
+#define XN_PROP_FRAME_SYNCED_WITH "xnFrameSyncedWith" // String. name of the frame synced
 
 //MapGenerator
 #define XN_PROP_MAP_OUTPUT_MODE "xnMapOutputMode" //general
 #define XN_PROP_SUPPORTED_MAP_OUTPUT_MODES_COUNT "xnSupportedMapOutputModesCount" //int
 #define XN_PROP_SUPPORTED_MAP_OUTPUT_MODES "xnSupportedMapOutputModes" //general
 #define XN_PROP_CROPPING "xnCropping" //general
+#define XN_PROP_BYTES_PER_PIXEL "xnBytesPerPixel" //int
 
 //ImageGenerator
 #define XN_PROP_SUPPORTED_PIXEL_FORMATS "xnSupportedPixelFormats" //general

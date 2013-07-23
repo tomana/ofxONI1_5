@@ -1,6 +1,6 @@
-#pragma once
-
 #include "ofMain.h"
+#undef Status
+#undef STATUS
 #include "XnOpenNI.h"
 #include "XnCodecIDs.h"
 #include "XnCppWrapper.h"
@@ -23,12 +23,7 @@ static XnChar g_strPose[20] = "";
 static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
 {
 	printf("New User %d\n", nId);
-<<<<<<< HEAD
-	// New user found
 
-=======
-	// New user found
->>>>>>> eed756a3fb4df7a6e197b27dd45a7448a7843de4
 	if (g_bNeedPose)
 	{
 		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
@@ -88,8 +83,8 @@ static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapabili
 static XnFloat oniColors[][3] =
 {
 	{0,1,1},
-	{0,0,1},
 	{0,1,0},
+	{0,0,1},
 	{1,1,0},
 	{1,0,0},
 	{1,.5,0},
@@ -149,71 +144,47 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
         // Enable/disable texture updates
 		void setUseTexture(bool use_texture);
 
-        void draw(float x, float y, float w, float h);
-		void draw(float x, float y);
-		void draw(const ofPoint& point);
-		void draw(const ofRectangle& rect);
+        // Draw the video texture
+		void draw(float x, float y, float w, float h);
+        void draw(float x, float y) {draw(x,y,stream_width,stream_height);};
+        void draw(const ofPoint& point) {draw(point.x, point.y);};
+        void draw(const ofRectangle& rect) {draw(rect.x, rect.y, rect.width, rect.height);};
 
         // Draw the depth texture
 		void drawDepth(float x, float y, float w, float h);
-		void drawDepth(float x, float y);
-		void drawDepth(const ofPoint& point);
-		void drawDepth(const ofRectangle& rect);
+        void drawDepth(float x, float y) {drawDepth(x,y,stream_width,stream_height);};
+        void drawDepth(const ofPoint& point) {drawDepth(point.x, point.y);};
+        void drawDepth(const ofRectangle& rect) {drawDepth(rect.x, rect.y, rect.width, rect.height);};
 
+        // Draw player image
+		void drawPlayers(float x, float y, float w, float h);
+        void drawPlayers(float x, float y) {drawPlayers(x,y,stream_width,stream_height);};
+        void drawPlayers(const ofPoint& point) { drawPlayers(point.x, point.y);};
+        void drawPlayers(const ofRectangle& rect) {drawPlayers(rect.x, rect.y, rect.width, rect.height);};
+
+        // Not implemented. Should probably not be here.
         void draw3D();
 
         float getWidth();
 		float getHeight();
 
-	//	void drawDepth(int x, int y) {drawDepth(x, y, width, height);};
-	//	void drawDepth(int x, int y, int w, int h);
-		void drawPlayers(int x, int y) {drawPlayers(x, y, width, height);};
-		void drawPlayers(int x, int y, int w, int h);;
-		void drawCam(int x, int y) {drawCam(x, y, width, height);};
-		void drawCam(int x, int y, int w, int h);
-
-		// EGET
-		void drawContour(int x, int y, int threshold) {drawContour(x, y, width, height, threshold);};
-		void drawContour(int x, int y, int w, int h, int threshold);
-        void drawPointCloud(int x, int y, float depthCoeff, float differenceCoeff, int stepx, int stepy);
-
+        // Functions for skeleton parts.
 		void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
-		void skeletonTracking(int x, int y);
+		void drawSkeletons(int x, int y);
 
 		void calculateMaps();
 
 		xn::SceneMetaData sceneMD;
-		// EGET
 		xn::SceneMetaData playerMD;
 		xn::DepthMetaData depthMD;
 		xn::ImageMetaData g_imageMD;
 
-		ofxCvGrayscaleImage depth;
-		// eget
-		ofxCvContourFinder 	contourFinder;
-		ofxCvGrayscaleImage grayImage;
-		ofxCvGrayscaleImage grayDiff;
-
-        ofImage shaderdepth;
-        ofImage refcolordepth;
-        ofxCvColorImage colordepth;
-		ofImage players;
-		ofxCvColorImage imgCam;
         int millis;
 
 		float depthHist[MAX_DEPTH];
 		unsigned char gColorBuffer[640*480*3];         // BGRA
 
-		unsigned char * tmpGrayPixels;
-		unsigned char * tmpColorPixels;
-		unsigned char * tmpRefColorPixels;
-		unsigned char * tmpShaderPixels;
-		unsigned char * tmpCamColorPixels;
-
         bool color_depth_bool;
-
-		XnPoint3D LHandPoint;
-		XnPoint3D RHandPoint;
 
         float counter;
 
@@ -243,13 +214,14 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 
         ofTexture videoTex;
 		ofTexture depthTex;
+		ofTexture playersTex;
 		bool bGrabberInited;
 
 		bool bIsFrameNew;
 
 		ofPixels videoPixels;
 		ofPixels depthPixels;
-		ofPixels usersPixels;
+		ofPixels playersPixels;
 
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;

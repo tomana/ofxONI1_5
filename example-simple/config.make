@@ -18,9 +18,7 @@ USER_CFLAGS =
 # for example libraries like:
 # USER_LDFLAGS = libs/libawesomelib.a
 
-USER_LDFLAGS = 
-
-USER_LIBS = -lOpenNI -lGLU -lGLEW
+USER_LDFLAGS =  -lOpenNI
 
 EXCLUDE_FROM_SOURCE="bin,.xcodeproj,obj"
 

@@ -1,30 +1,26 @@
-/*****************************************************************************
-*                                                                            *
-*  OpenNI 1.0 Alpha                                                          *
-*  Copyright (C) 2010 PrimeSense Ltd.                                        *
-*                                                                            *
-*  This file is part of OpenNI.                                              *
-*                                                                            *
-*  OpenNI is free software: you can redistribute it and/or modify            *
-*  it under the terms of the GNU Lesser General Public License as published  *
-*  by the Free Software Foundation, either version 3 of the License, or      *
-*  (at your option) any later version.                                       *
-*                                                                            *
-*  OpenNI is distributed in the hope that it will be useful,                 *
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of            *
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              *
-*  GNU Lesser General Public License for more details.                       *
-*                                                                            *
-*  You should have received a copy of the GNU Lesser General Public License  *
-*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.            *
-*                                                                            *
-*****************************************************************************/
-
-
-
-
-#ifndef __XN_OPEN_NITE_STATUS_H__
-#define __XN_OPEN_NITE_STATUS_H__
+/****************************************************************************
+*                                                                           *
+*  OpenNI 1.x Alpha                                                         *
+*  Copyright (C) 2011 PrimeSense Ltd.                                       *
+*                                                                           *
+*  This file is part of OpenNI.                                             *
+*                                                                           *
+*  OpenNI is free software: you can redistribute it and/or modify           *
+*  it under the terms of the GNU Lesser General Public License as published *
+*  by the Free Software Foundation, either version 3 of the License, or     *
+*  (at your option) any later version.                                      *
+*                                                                           *
+*  OpenNI is distributed in the hope that it will be useful,                *
+*  but WITHOUT ANY WARRANTY; without even the implied warranty of           *
+*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the             *
+*  GNU Lesser General Public License for more details.                      *
+*                                                                           *
+*  You should have received a copy of the GNU Lesser General Public License *
+*  along with OpenNI. If not, see <http://www.gnu.org/licenses/>.           *
+*                                                                           *
+****************************************************************************/
+#ifndef __XN_OPEN_NI_STATUS_H__
+#define __XN_OPEN_NI_STATUS_H__
 
 #include "XnPlatform.h"
 
@@ -32,13 +28,13 @@
 // Types
 //---------------------------------------------------------------------------
 
-/** Defines the XnStatus type.
+/** Defines the XnStatus type. 
  *	The high word represents the group to which this error belongs to.
  *	The low word is a sequential number inside the group. */
 typedef XnUInt32 XnStatus;
 
 /** Definition of the OK error code. */
-static const XnStatus XN_STATUS_OK = 0;
+#define XN_STATUS_OK ((XnStatus)0)
 
 //---------------------------------------------------------------------------
 // API
@@ -51,7 +47,7 @@ static const XnStatus XN_STATUS_OK = 0;
  *
  * @return A string representation of the Xiron status.
  */
-XN_C_API const XnChar* xnGetStatusString(const XnStatus theStatus);
+XN_C_API const XnChar* XN_C_DECL xnGetStatusString(const XnStatus Status);
 
 /**
 * Gets the name of a Xiron Status as a string.
@@ -60,7 +56,7 @@ XN_C_API const XnChar* xnGetStatusString(const XnStatus theStatus);
 *
 * @return A string representation of the Xiron status name.
 */
-XN_C_API const XnChar* xnGetStatusName(const XnStatus theStatus);
+XN_C_API const XnChar* XN_C_DECL xnGetStatusName(const XnStatus Status);
 
 /**
 * Prints a user message with a description of the error.
@@ -69,7 +65,7 @@ XN_C_API const XnChar* xnGetStatusName(const XnStatus theStatus);
 * @param	csUserMessage	[in]	A user message.
 *
 */
-XN_C_API void xnPrintError(const XnStatus theStatus, const XnChar* csUserMessage);
+XN_C_API void XN_C_DECL xnPrintError(const XnStatus Status, const XnChar* csUserMessage);
 
 //---------------------------------------------------------------------------
 // Enums
@@ -86,12 +82,12 @@ typedef enum XnErrorGroup
 #define XN_STATUS_MAKE(group, code)		((group << 16) | code)
 
 /** Returns the group of the status. */
-#define XN_STATUS_GROUP(status)			(status >> 16)
+#define XN_STATUS_GROUP(status)			XnUInt16(status >> 16)
 
 /** Returns the code of the status. */
-#define XN_STATUS_CODE(status)			(status & 0x0000FFFF)
+#define XN_STATUS_CODE(status)			XnUInt16(status & 0x0000FFFF)
 
-/** Marks the beginning of a message map of a specific module. */
+/** Marks the beginning of a message map of a specific module. */ 
 #define XN_STATUS_MESSAGE_MAP_START_FROM(group, first)		\
 	enum _##group##first##Errors							\
 	{														\
@@ -100,7 +96,7 @@ typedef enum XnErrorGroup
 #define XN_STATUS_MESSAGE_MAP_START(group)					\
 	XN_STATUS_MESSAGE_MAP_START_FROM(group, 0)
 
-/** Adds an entry to the message map. */
+/** Adds an entry to the message map. */ 
 #define XN_STATUS_MESSAGE(csName, csMessage)	\
 		csName,
 
