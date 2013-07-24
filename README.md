@@ -16,3 +16,6 @@ http://www.openni.org/openni-sdk/openni-sdk-history-2/
 
 Some dated information on installing NiTE and running the examples can be found here:
 http://www.keyboardmods.com/2010/12/howto-kinect-openninite-skeleton.html
+
+The SensorKinect can be downloaded from this repository:
+https://github.com/avin2/SensorKinect
