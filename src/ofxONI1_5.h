@@ -4,7 +4,6 @@
 #include "XnOpenNI.h"
 #include "XnCodecIDs.h"
 #include "XnCppWrapper.h"
-#include "ofxOpenCv.h"
 
 static xn::Context g_Context;
 static xn::DepthGenerator g_DepthGenerator;
@@ -109,6 +108,8 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 
 		// close connection and stop grabbing images
 		void close();
+		// close generators
+		void stopGenerators();
 
 		// is the connection currently open?
 		bool isConnected();
@@ -140,6 +141,10 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 		ofTexture& getTextureReference();
 		// Depth image as texture
 		ofTexture& getDepthTextureReference();
+		//
+		ofTexture& getPlayersTextureReference();
+        // Get gray reference
+		ofTexture& getGrayTextureReference();
 
         // Enable/disable texture updates
 		void setUseTexture(bool use_texture);
@@ -162,11 +167,18 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
         void drawPlayers(const ofPoint& point) { drawPlayers(point.x, point.y);};
         void drawPlayers(const ofRectangle& rect) {drawPlayers(rect.x, rect.y, rect.width, rect.height);};
 
+        // Draw gray depth texture
+		void drawGrayDepth(float x, float y, float w, float h);
+        void drawGrayDepth(float x, float y) {drawGrayDepth(x,y,stream_width,stream_height);};
+        void drawGrayDepth(const ofPoint& point) {drawGrayDepth(point.x, point.y);};
+        void drawGrayDepth(const ofRectangle& rect) {drawGrayDepth(rect.x, rect.y, rect.width, rect.height);};
+
         // Not implemented. Should probably not be here.
         void draw3D();
 
         float getWidth();
 		float getHeight();
+
 
         // Functions for skeleton parts.
 		void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
@@ -204,24 +216,43 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 
 		void generate_grid();
 
+        		// clear resources
+		void clear();
+
+        ofVec3f playerjoints[15][25];
+        vector<int> activeplayers;
 
     protected:
+
+        // Players
+        XnUserID* aUsers;
+        XnUInt16 nUsers;
+        XnPoint3D* com;
+        //
+
         bool bUseTexture;
         bool bGrabVideo;
         bool bColorizeDepthImage;
         bool bDrawSkeleton;
         bool bDrawPlayers;
 
+        bool bIsFrameNew;
+		bool bNeedsUpdateColor;
+		bool bNeedsUpdateDepth;
+		bool bUpdateTex;
+
         ofTexture videoTex;
 		ofTexture depthTex;
 		ofTexture playersTex;
+		ofTexture grayTex;
+
 		bool bGrabberInited;
 
-		bool bIsFrameNew;
 
 		ofPixels videoPixels;
 		ofPixels depthPixels;
 		ofPixels playersPixels;
+		ofPixels grayPixels;
 
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;
@@ -229,5 +260,10 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
         ofShortPixels depthPixelsRawBack;
 		ofPixels videoPixelsBack;
 
-};
+    	private:
+		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
+		// to open the device instead in subclass ofxNiTEUserTracker.
 
+		virtual void threadedFunction();
+
+};
