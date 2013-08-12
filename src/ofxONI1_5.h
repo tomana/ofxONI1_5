@@ -93,6 +93,7 @@ static XnFloat oniColors[][3] =
 	{1,1,.5},
 	{0,0,0}
 };
+
 static XnUInt32 nColors = 10;
 
 #include "ofxBase3DVideo.h"
@@ -126,13 +127,15 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 		// Raw pixel pointer for the raw 16 bit depth image (in mm)
 		// OpenNI 2.2 uses typedef uint16_t openni::DepthPixel
 		unsigned short* getRawDepthPixels();
-
+        //
+        unsigned char* getPlayersPixels();
 		// Raw pixel pointer to float millimeter distance image:
 		float* getDistancePixels();
 
 		// ofPixel objects
 		ofPixels& getPixelsRef();
 		ofPixels& getDepthPixelsRef();
+
 		ofShortPixels& getRawDepthPixelsRef();
 		ofFloatPixels& getDistancePixelsRef();
 

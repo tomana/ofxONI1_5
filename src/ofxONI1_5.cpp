@@ -390,6 +390,7 @@ void ofxONI1_5::drawPlayers(float x, float y, float w, float h)
     {
         XnPoint3D com;
         g_UserGenerator.GetCoM(aUsers[i], com);
+
         g_DepthGenerator.ConvertRealWorldToProjective(1, &com, &com);
 
         ofSetColor(255, 255, 255, 255);
@@ -508,6 +509,12 @@ float* ofxONI1_5::getDistancePixels()
 {
     return distancePixels.getPixels();
 }
+
+unsigned char* ofxONI1_5::getPlayersPixels()
+{
+    return playersPixels.getPixels();
+}
+
 
 ofPixels& ofxONI1_5::getPixelsRef()
 {
