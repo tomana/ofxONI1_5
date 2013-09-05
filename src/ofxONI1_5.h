@@ -5,13 +5,6 @@
 #include "XnCodecIDs.h"
 #include "XnCppWrapper.h"
 
-
-#define CHECK_RC(nRetVal, what)										\
-	if(nRetVal != XN_STATUS_OK)									   \
-	{																\
-		printf("%s failed: %s\n", what, xnGetStatusString(nRetVal)); \
-	}
-
 static XnFloat oniColors[][3] = {
 	{0, 1, 1},
 	{0, 1, 0},
@@ -178,6 +171,8 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
 		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
+
+		bool bInited;
 
 		bool bUseTexture;
 		bool bGrabVideo;

@@ -11,6 +11,7 @@ ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateColor = false;
 	bIsConnected = false;
 	bUseUserMap = true;
+	bInited = false;
 }
 
 ofxONI1_5::~ofxONI1_5(){
@@ -28,7 +29,6 @@ XnSkeletonJoint trackedJointsArray[] = {
        	XN_SKEL_RIGHT_ANKLE, XN_SKEL_RIGHT_FOOT };
 
 bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth_image, bool use_players, bool use_skeleton){
-	XnStatus nRetVal = XN_STATUS_OK;
 
 	bUseTexture = use_texture;
 	bGrabVideo = use_color_image;
@@ -38,48 +38,63 @@ bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth
 
 	trackedJoints.assign(trackedJointsArray, trackedJointsArray + sizeof(trackedJointsArray)/sizeof(trackedJointsArray[0]));
 
-
-	// printf("InitFromXmlFile\n");
-	// nRetVal = oniContext.InitFromXmlFile(SAMPLE_XML_PATH);
-	nRetVal = oniContext.Init();
-	CHECK_RC(nRetVal, "InitFromXml");
-	return true;
+	XnStatus nRetVal = oniContext.Init();
+	if(nRetVal != XN_STATUS_OK) {
+		ofLogWarning("ofxONI1_5") << "OpenNI Init failed: " << xnGetStatusString(nRetVal);
+		return false;
+	} else {
+		bInited = true;
+		return true;
+	}
 }
 
 bool ofxONI1_5::open(){
 	XnStatus nRetVal = XN_STATUS_OK;
 
-	printf("FindExistingNode\n");
-	//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_DEPTH, oniDepthGenerator);
+	//
+	// Open depth stream
+	//
 	nRetVal = oniDepthGenerator.Create(oniContext);
-	CHECK_RC(nRetVal, "Find depth generator");
-	bDepthOn = true;
+	if(nRetVal != XN_STATUS_OK) {
+		ofLogWarning("ofxONI1_5") << "Unable to create depth image context: " << xnGetStatusString(nRetVal);
+		return false;
+	} else {
+		bDepthOn = true;
+	}
 
+	//
+	// Open user generator stream
+	//
 	if(bDrawPlayers){
-		//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_USER, oniUserGenerator);
 		nRetVal = oniUserGenerator.Create(oniContext);
 		if(nRetVal != XN_STATUS_OK){
-			nRetVal = oniUserGenerator.Create(oniContext);
-			CHECK_RC(nRetVal, "Find user generator");
+			ofLogWarning("ofxONI1_5") << "Unable to open user generator stream: " << xnGetStatusString(nRetVal);
+		} else {
+			bUserTrackerOn = true;
 		}
-		bUserTrackerOn = true;
 	}
+
+	//
+	// Open color/video stream
+	//
 	if(bGrabVideo){
-		//printf("FindExistingNode\n");
-		//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_IMAGE, oniImageGenerator);
 		nRetVal = oniImageGenerator.Create(oniContext);
-		CHECK_RC(nRetVal, "Find image generator");
-		bColorOn = true;
+		if(nRetVal != XN_STATUS_OK){
+			ofLogWarning("ofxONI1_5") << "Unable to open video generator stream: " << xnGetStatusString(nRetVal);
+			return false;
+		} 
 	}
 
 	nRetVal = oniContext.StartGeneratingAll();
-	CHECK_RC(nRetVal, "StartGenerating");
+	if(nRetVal != XN_STATUS_OK){
+		ofLogWarning("ofxONI1_5") << "Unable to start all generators: " << xnGetStatusString(nRetVal);
+		return false;
+	} 
 
 
-	// old
 	if(bDrawSkeleton){
 		if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
-			printf("Supplied user generator doesn't support skeleton\n");
+			ofLogWarning("ofxONI1_5") << "UserTracker: Skeleton capability not supported.";
 		} else {
 			XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 
