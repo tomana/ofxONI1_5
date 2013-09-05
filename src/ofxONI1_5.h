@@ -114,6 +114,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		float getWidth();
 		float getHeight();
 
+		ofVec3f toOf(XnVector3D p) { return ofVec3f(p.X, p.Y, p.Z); }
 
 		// Functions for skeleton parts.
 		// void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
@@ -141,6 +142,17 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
 
+		struct UserData {
+			// ofVec3f boundingBoxMin;
+			// ofVec3f boundingBoxMax;
+			ofVec3f centerOfMass;
+			short id;
+			// bool isVisible;
+			bool isSkeletonAvailable;
+			map<XnSkeletonJoint,ofVec3f> skeletonPoints;
+
+		};
+
 	protected:
 
 		static xn::Context g_Context;
@@ -167,12 +179,6 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
 		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
 
-		// Players
-		XnUserID * aUsers;
-		XnUInt16 nUsers;
-		XnPoint3D * com;
-		//
-
 		bool bUseTexture;
 		bool bGrabVideo;
 		bool bColorizeDepthImage;
@@ -182,6 +188,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		bool bDepthOn;
 		bool bColorOn;
 		bool bUserTrackerOn;
+		bool bUseUserMap;
 		bool bIsConnected;
 
 		bool bIsFrameNew;
@@ -193,9 +200,9 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofTexture depthTex;
 		ofTexture playersTex;
 		ofTexture grayTex;
+		ofTexture userMapTex;
 
 		bool bGrabberInited;
-
 
 		ofPixels videoPixels;
 		ofPixels depthPixels;
@@ -204,9 +211,12 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;
+		ofShortPixels userMap;
 
 		void updateDepth();
 		void updateColor();
 		void updateUserTracker();
 
+		vector<UserData> userData;
+		vector<XnSkeletonJoint> trackedJoints;
 };

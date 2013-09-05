@@ -10,12 +10,22 @@ ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateDepth = false;
 	bNeedsUpdateColor = false;
 	bIsConnected = false;
-
+	bUseUserMap = true;
 }
 
 ofxONI1_5::~ofxONI1_5(){
 
 }
+
+XnSkeletonJoint trackedJointsArray[] = { 
+	XN_SKEL_HEAD, XN_SKEL_NECK, XN_SKEL_TORSO, XN_SKEL_WAIST,
+       	XN_SKEL_LEFT_COLLAR, XN_SKEL_LEFT_SHOULDER, XN_SKEL_LEFT_ELBOW,
+       	XN_SKEL_LEFT_WRIST, XN_SKEL_LEFT_HAND, XN_SKEL_LEFT_FINGERTIP,
+       	XN_SKEL_RIGHT_COLLAR, XN_SKEL_RIGHT_SHOULDER, XN_SKEL_RIGHT_ELBOW,
+       	XN_SKEL_RIGHT_WRIST, XN_SKEL_RIGHT_HAND, XN_SKEL_RIGHT_FINGERTIP,
+       	XN_SKEL_LEFT_HIP, XN_SKEL_LEFT_KNEE, XN_SKEL_LEFT_ANKLE,
+       	XN_SKEL_LEFT_FOOT, XN_SKEL_RIGHT_HIP, XN_SKEL_RIGHT_KNEE,
+       	XN_SKEL_RIGHT_ANKLE, XN_SKEL_RIGHT_FOOT };
 
 bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth_image, bool use_players, bool use_skeleton){
 	XnStatus nRetVal = XN_STATUS_OK;
@@ -26,6 +36,7 @@ bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth
 	bDrawPlayers = use_players;
 	bDrawSkeleton = use_skeleton;
 
+	trackedJoints.assign(trackedJointsArray, trackedJointsArray + sizeof(trackedJointsArray)/sizeof(trackedJointsArray[0]));
 
 
 	// printf("InitFromXmlFile\n");
@@ -139,6 +150,10 @@ bool ofxONI1_5::open(){
 		grayTex.allocate(stream_width, stream_height, GL_LUMINANCE);
 	}
 
+	if(bUserTrackerOn) {
+		userMap.allocate(stream_width, stream_height, 1);
+	}
+
 	// MAYBE THIS SHOULD NOT BE HERE
 	enableCalibratedRGBDepth();
 
@@ -215,8 +230,7 @@ void ofxONI1_5::update(){
 	if(bUserTrackerOn && g_UserGenerator.IsNewDataAvailable()) {
 		bIsFrameNew = true;
 		g_UserGenerator.WaitAndUpdateData();
-		g_UserGenerator.GetUserPixels(0,sceneMD);
-		//updateUserTracker();
+		updateUserTracker();
 	}
 
 }
@@ -281,109 +295,52 @@ void ofxONI1_5::updateColor() {
 	}
 }
 
+
+
 void ofxONI1_5::updateUserTracker() {
-}
-
-
-void ofxONI1_5::drawPlayers(float x, float y, float w, float h){
-	playersTex.draw(x, y, w, h);
-
-
-	XnUserID aUsers[15];
-	XnUInt16 nUsers = 15;
-	g_UserGenerator.GetUsers(aUsers, nUsers);
-	for(int i = 0; i < nUsers; ++i){
-		XnPoint3D com;
-		g_UserGenerator.GetCoM(aUsers[i], com);
-
-		g_DepthGenerator.ConvertRealWorldToProjective(1, &com, &com);
-
-		ofSetColor(255, 255, 255, 255);
-		ofDrawBitmapString(ofToString((int)aUsers[i]), com.X, com.Y);
+	if(bUseUserMap) {
+		g_UserGenerator.GetUserPixels(0,sceneMD);
+		userMap.setFromPixels( (unsigned short*) sceneMD.Data(), 
+				stream_width, stream_height, 1);
 	}
 
+	userData.clear();
+
+	unsigned short numUsers = g_UserGenerator.GetNumberOfUsers();
+	XnUserID* userArray = new XnUserID[numUsers];
+	g_UserGenerator.GetUsers(userArray, numUsers);
+	for(int i = 0; i < numUsers; i++) {
+		UserData d;
+		d.id = userArray[i];
+
+		XnPoint3D com;
+		g_UserGenerator.GetCoM(d.id, com);
+		d.centerOfMass = toOf(com);
+
+		xn::SkeletonCapability skeleton = g_UserGenerator.GetSkeletonCap();
+
+		d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
+
+		for(int i = 0; i < trackedJoints.size(); i++) {
+			XnSkeletonJoint joint = trackedJoints[i];
+			XnSkeletonJointPosition jointdata;
+			skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
+			d.skeletonPoints[joint] = toOf(jointdata.position);
+		}
+
+		userData.push_back(d);
+	}
 }
 
-// DRAW SKELETON
-// void ofxONI1_5::drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y){
-// 
-// 	if(!g_UserGenerator.GetSkeletonCap().IsTracking(player)){
-// 		printf("not tracked!\n");
-// 		return;
-// 	}
-// 
-// 	XnSkeletonJointPosition joint;
-// 	g_UserGenerator.GetSkeletonCap().GetSkeletonJointPosition(player, eJoint, joint);
-// 
-// 	if(joint.fConfidence < 0.5){
-// 		return;
-// 	}
-// 
-// 	XnPoint3D pt;
-// 	pt = joint.position;
-// 	float ptz = pt.Z;
-// 
-// 	float radZ = 25 - ptz / 100;
-// 	if(radZ < 3){
-// 		radZ = 3;
-// 	}
-// 
-// 	g_DepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
-// 
-// 	ofPushMatrix();
-// 	ofSetColor(255, 0, 0);
-// 	ofTranslate(x, y);
-// 	//ofTranslate(-width/2, -height/2);
-// 	//ofTranslate(0,0,-pt.Z);
-// 	ofCircle(pt.X, pt.Y, -3);
-// 	playerjoints[int(player)][int(eJoint)] = ofVec3f(pt.X, pt.Y, pt.Z);
-// 	//cout << ofToString(int(player)) + " " + ofToString(int(eJoint)) << endl;
-// 	ofPopMatrix();
-// 
-// }
-// void ofxONI1_5::drawSkeletons(int x, int y){
-// 	XnUserID aUsers[15];
-// 	XnUInt16 nUsers = 15;
-// 	ofPushMatrix();
-// 	g_UserGenerator.GetUsers(aUsers, nUsers);
-// 	activeplayers.clear();
-// 	for(int i = 0; i < nUsers; ++i){
-// 		if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])){
-// 			activeplayers.push_back(int(aUsers[i]));
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_HEAD, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_NECK, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_SHOULDER, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_ELBOW, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HAND, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_SHOULDER, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_ELBOW, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HAND, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_TORSO, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HIP, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_KNEE, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_FOOT, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HIP, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_KNEE, x, y);
-// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_FOOT, x, y);
-// 
-// 
-// //			DrawLimb(aUsers[i], XN_SKEL_LEFT_HIP, XN_SKEL_RIGHT_HIP);
-// 		}
-// 	}
-// 	ofPopMatrix();
-// }
-
 bool ofxONI1_5::isConnected(){
-	return bIsConnected;//isThreadRunning();
+	return bIsConnected;
 }
 
 bool ofxONI1_5::isFrameNew(){
-	//if(isThreadRunning() && bIsFrameNew){
 	if(bIsFrameNew) {
 		bIsFrameNew = false;
 		return true;
-	}
-	else{
+	} else {
 		return false;
 	}
 }
@@ -474,7 +431,6 @@ void ofxONI1_5::drawGrayDepth(float x, float y, float w, float h){
 
 void ofxONI1_5::draw3D(){
 	// not implemented yet
-	draw(0, 0);
 }
 
 float ofxONI1_5::getWidth(){
