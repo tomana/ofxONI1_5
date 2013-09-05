@@ -5,10 +5,6 @@
 #include "XnCodecIDs.h"
 #include "XnCppWrapper.h"
 
-static xn::Context g_Context;
-static xn::DepthGenerator g_DepthGenerator;
-static xn::UserGenerator g_UserGenerator;
-static xn::ImageGenerator g_image;
 
 #define CHECK_RC(nRetVal, what)										\
 	if(nRetVal != XN_STATUS_OK)									   \
@@ -16,51 +12,6 @@ static xn::ImageGenerator g_image;
 		printf("%s failed: %s\n", what, xnGetStatusString(nRetVal)); \
 	}
 
-static XnBool g_bNeedPose = FALSE;
-static XnChar g_strPose[20] = "";
-
-static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
-	printf("New User %d\n", nId);
-
-	if(g_bNeedPose){
-		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
-	}
-	else{
-		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-	}
-}
-static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
-	printf("Lost User id: %i\n", (unsigned int)nId);
-}
-
-// Callback: Detected a pose
-static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
-	printf("Pose %s detected for user %d\n", strPose, nId);
-	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
-	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-}
-// Callback: Started calibration
-static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie){
-	printf("Calibration started for user %d\n", nId);
-}
-// Callback: Finished calibration
-static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie){
-	if(bSuccess){
-		// Calibration succeeded
-		printf("Calibration complete, start tracking user %d\n", nId);
-		g_UserGenerator.GetSkeletonCap().StartTracking(nId);
-	}
-	else{
-		// Calibration failed
-		printf("Calibration failed for user %d\n", nId);
-		if(g_bNeedPose){
-			g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
-		}
-		else{
-			g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-		}
-	}
-}
 
 
 //#define SAMPLE_XML_PATH "data/Sample-User.xml"
@@ -240,6 +191,20 @@ class ofxONI1_5 : public ofxBase3DVideo,
 		vector <int> activeplayers;
 
 	protected:
+
+		static xn::Context g_Context;
+		static xn::DepthGenerator g_DepthGenerator;
+		static xn::UserGenerator g_UserGenerator;
+		static xn::ImageGenerator g_image;
+
+		static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
+		static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
+		static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
+		static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie);
+		static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie);
+
+		static XnBool g_bNeedPose;
+		static XnChar g_strPose[20];
 
 		// Players
 		XnUserID * aUsers;

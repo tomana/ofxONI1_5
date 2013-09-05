@@ -1,8 +1,19 @@
 #include "ofxONI1_5.h"
 
+// Declare static members in ofxONI1_5
+xn::Context ofxONI1_5::g_Context;
+xn::DepthGenerator ofxONI1_5::g_DepthGenerator;
+xn::UserGenerator ofxONI1_5::g_UserGenerator;
+xn::ImageGenerator ofxONI1_5::g_image;
+
+XnBool ofxONI1_5::g_bNeedPose = false;
+XnChar ofxONI1_5::g_strPose[20] = "";
+
+
 ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateDepth = false;
 	bNeedsUpdateColor = false;
+
 }
 
 ofxONI1_5::~ofxONI1_5(){
@@ -59,8 +70,8 @@ bool ofxONI1_5::open(){
 			printf("Supplied user generator doesn't support skeleton\n");
 //		return;
 		}
-		g_UserGenerator.RegisterUserCallbacks(User_NewUser, User_LostUser, NULL, hUserCallbacks);
-		g_UserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(UserCalibration_CalibrationStart, UserCalibration_CalibrationEnd, NULL, hCalibrationCallbacks);
+		g_UserGenerator.RegisterUserCallbacks(ofxONI1_5::User_NewUser, ofxONI1_5::User_LostUser, NULL, hUserCallbacks);
+		g_UserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(ofxONI1_5::UserCalibration_CalibrationStart, ofxONI1_5::UserCalibration_CalibrationEnd, NULL, hCalibrationCallbacks);
 
 		if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
 			g_bNeedPose = TRUE;
@@ -68,7 +79,7 @@ bool ofxONI1_5::open(){
 				printf("Pose required, but not supported\n");
 //			return 1;
 			}
-			g_UserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(UserPose_PoseDetected, NULL, NULL, hPoseCallbacks);
+			g_UserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(ofxONI1_5::UserPose_PoseDetected, NULL, NULL, hPoseCallbacks);
 			g_UserGenerator.GetSkeletonCap().GetCalibrationPose(g_strPose);
 		}
 
@@ -562,3 +573,47 @@ bool ofxONI1_5::enableCalibratedRGBDepth(){
 
 	return true;
 }
+
+void XN_CALLBACK_TYPE ofxONI1_5::User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
+	printf("New User %d\n", nId);
+
+	if(g_bNeedPose){
+		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
+	}
+	else{
+		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+	}
+}
+void XN_CALLBACK_TYPE ofxONI1_5::User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
+	printf("Lost User id: %i\n", (unsigned int)nId);
+}
+
+// Callback: Detected a pose
+void XN_CALLBACK_TYPE ofxONI1_5::UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
+	printf("Pose %s detected for user %d\n", strPose, nId);
+	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
+	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+}
+// Callback: Started calibration
+void XN_CALLBACK_TYPE ofxONI1_5::UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie){
+	printf("Calibration started for user %d\n", nId);
+}
+// Callback: Finished calibration
+void XN_CALLBACK_TYPE ofxONI1_5::UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie){
+	if(bSuccess){
+		// Calibration succeeded
+		printf("Calibration complete, start tracking user %d\n", nId);
+		g_UserGenerator.GetSkeletonCap().StartTracking(nId);
+	}
+	else{
+		// Calibration failed
+		printf("Calibration failed for user %d\n", nId);
+		if(g_bNeedPose){
+			g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
+		}
+		else{
+			g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+		}
+	}
+}
+
