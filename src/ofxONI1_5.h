@@ -123,7 +123,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		xn::SceneMetaData sceneMD;
 		xn::SceneMetaData playerMD;
 		xn::DepthMetaData depthMD;
-		xn::ImageMetaData g_imageMD;
+		xn::ImageMetaData oniImageGeneratorMD;
 
 		int stream_width, stream_height;
 
@@ -155,10 +155,10 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 	protected:
 
-		static xn::Context g_Context;
-		static xn::DepthGenerator g_DepthGenerator;
-		static xn::UserGenerator g_UserGenerator;
-		static xn::ImageGenerator g_image;
+		static xn::Context oniContext;
+		static xn::DepthGenerator oniDepthGenerator;
+		static xn::UserGenerator oniUserGenerator;
+		static xn::ImageGenerator oniImageGenerator;
 
 		// OpenNI callback functions must be static, but pCookie can be used
 		// to send a pointer to the current instance. This is used in turn to 

@@ -1,10 +1,10 @@
 #include "ofxONI1_5.h"
 
 // Declare static members in ofxONI1_5
-xn::Context ofxONI1_5::g_Context;
-xn::DepthGenerator ofxONI1_5::g_DepthGenerator;
-xn::UserGenerator ofxONI1_5::g_UserGenerator;
-xn::ImageGenerator ofxONI1_5::g_image;
+xn::Context ofxONI1_5::oniContext;
+xn::DepthGenerator ofxONI1_5::oniDepthGenerator;
+xn::UserGenerator ofxONI1_5::oniUserGenerator;
+xn::ImageGenerator ofxONI1_5::oniImageGenerator;
 
 ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateDepth = false;
@@ -40,8 +40,8 @@ bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth
 
 
 	// printf("InitFromXmlFile\n");
-	// nRetVal = g_Context.InitFromXmlFile(SAMPLE_XML_PATH);
-	nRetVal = g_Context.Init();
+	// nRetVal = oniContext.InitFromXmlFile(SAMPLE_XML_PATH);
+	nRetVal = oniContext.Init();
 	CHECK_RC(nRetVal, "InitFromXml");
 	return true;
 }
@@ -50,50 +50,50 @@ bool ofxONI1_5::open(){
 	XnStatus nRetVal = XN_STATUS_OK;
 
 	printf("FindExistingNode\n");
-	//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, g_DepthGenerator);
-	nRetVal = g_DepthGenerator.Create(g_Context);
+	//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_DEPTH, oniDepthGenerator);
+	nRetVal = oniDepthGenerator.Create(oniContext);
 	CHECK_RC(nRetVal, "Find depth generator");
 	bDepthOn = true;
 
 	if(bDrawPlayers){
-		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_USER, g_UserGenerator);
-		nRetVal = g_UserGenerator.Create(g_Context);
+		//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_USER, oniUserGenerator);
+		nRetVal = oniUserGenerator.Create(oniContext);
 		if(nRetVal != XN_STATUS_OK){
-			nRetVal = g_UserGenerator.Create(g_Context);
+			nRetVal = oniUserGenerator.Create(oniContext);
 			CHECK_RC(nRetVal, "Find user generator");
 		}
 		bUserTrackerOn = true;
 	}
 	if(bGrabVideo){
 		//printf("FindExistingNode\n");
-		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, g_image);
-		nRetVal = g_image.Create(g_Context);
+		//nRetVal = oniContext.FindExistingNode(XN_NODE_TYPE_IMAGE, oniImageGenerator);
+		nRetVal = oniImageGenerator.Create(oniContext);
 		CHECK_RC(nRetVal, "Find image generator");
 		bColorOn = true;
 	}
 
-	nRetVal = g_Context.StartGeneratingAll();
+	nRetVal = oniContext.StartGeneratingAll();
 	CHECK_RC(nRetVal, "StartGenerating");
 
 
 	// old
 	if(bDrawSkeleton){
-		if(!g_UserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
+		if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
 			printf("Supplied user generator doesn't support skeleton\n");
 		} else {
 			XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 
-			g_UserGenerator.RegisterUserCallbacks(
+			oniUserGenerator.RegisterUserCallbacks(
 					ofxONI1_5::User_NewUser, 
 					ofxONI1_5::User_LostUser, 
 					this, hUserCallbacks);
 
-			g_UserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(
+			oniUserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(
 					ofxONI1_5::UserCalibration_CalibrationStart, 
 					ofxONI1_5::UserCalibration_CalibrationEnd, 
 					this, hCalibrationCallbacks);
 
-			if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()) {
+			if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()) {
 				ofLogWarning("ofxONI1_5") << "UserTracker: NeedPoseForCalibration returned true, update your version of OpenNI.";
 				//setUseUserTracker(false);
 			}
@@ -102,20 +102,20 @@ bool ofxONI1_5::open(){
 			// Since OpenNI update, pose is not needed for skeleton calibration.
 			// Will not implement any pose detection as of now.
 			//
-			// if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
+			// if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
 			// 	g_bNeedPose = TRUE;
-			// 	if(!g_UserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
+			// 	if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
 			// 		printf("Pose required, but not supported\n");
 			// 	}
-			// 	g_UserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(ofxONI1_5::UserPose_PoseDetected, NULL, this, hPoseCallbacks);
-			// 	g_UserGenerator.GetSkeletonCap().GetCalibrationPose(g_strPose);
+			// 	oniUserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(ofxONI1_5::UserPose_PoseDetected, NULL, this, hPoseCallbacks);
+			// 	oniUserGenerator.GetSkeletonCap().GetCalibrationPose(g_strPose);
 			// }
 
-			g_UserGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+			oniUserGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
 		}
 	}
 
-	g_DepthGenerator.GetMetaData(depthMD);
+	oniDepthGenerator.GetMetaData(depthMD);
 
 	stream_width = depthMD.XRes();
 	stream_height = depthMD.YRes();
@@ -168,8 +168,8 @@ void ofxONI1_5::close(){
 
 // NOT WORKING PROPERLY
 	stopGenerators();
-	g_Context.StopGeneratingAll();
-	g_Context.Release();
+	oniContext.StopGeneratingAll();
+	oniContext.Release();
 	bNeedsUpdateDepth = false;
 	//stopThread();
 	
@@ -179,14 +179,14 @@ void ofxONI1_5::close(){
 //--------------------------------------------------------------
 void ofxONI1_5::stopGenerators(){
 
-	g_DepthGenerator.StopGenerating();
-	g_DepthGenerator.Release();
+	oniDepthGenerator.StopGenerating();
+	oniDepthGenerator.Release();
 
-	g_UserGenerator.StopGenerating();
-	g_UserGenerator.Release();
+	oniUserGenerator.StopGenerating();
+	oniUserGenerator.Release();
 
-	g_image.StopGenerating();
-	g_image.Release();
+	oniImageGenerator.StopGenerating();
+	oniImageGenerator.Release();
 
 }
 
@@ -213,23 +213,23 @@ void ofxONI1_5::clear(){
 
 void ofxONI1_5::update(){
 
-	if(bDepthOn && g_DepthGenerator.IsNewDataAvailable()) {
+	if(bDepthOn && oniDepthGenerator.IsNewDataAvailable()) {
 		bIsFrameNew = true;
-		g_DepthGenerator.WaitAndUpdateData();
-		g_DepthGenerator.GetMetaData(depthMD);
+		oniDepthGenerator.WaitAndUpdateData();
+		oniDepthGenerator.GetMetaData(depthMD);
 		updateDepth();
 	}
 
-	if(bColorOn && g_image.IsNewDataAvailable()) {
+	if(bColorOn && oniImageGenerator.IsNewDataAvailable()) {
 		bIsFrameNew = true;
-		g_image.WaitAndUpdateData();
-		g_image.GetMetaData(g_imageMD);
+		oniImageGenerator.WaitAndUpdateData();
+		oniImageGenerator.GetMetaData(oniImageGeneratorMD);
 		updateColor();
 	}
 
-	if(bUserTrackerOn && g_UserGenerator.IsNewDataAvailable()) {
+	if(bUserTrackerOn && oniUserGenerator.IsNewDataAvailable()) {
 		bIsFrameNew = true;
-		g_UserGenerator.WaitAndUpdateData();
+		oniUserGenerator.WaitAndUpdateData();
 		updateUserTracker();
 	}
 
@@ -287,8 +287,8 @@ void ofxONI1_5::updateDepth() {
 
 void ofxONI1_5::updateColor() {
 	// Color image is assumed to be 24 bit RGB.
-	videoPixels.setFromPixels( (unsigned char* ) g_imageMD.Data(), 
-			g_imageMD.XRes(), g_imageMD.YRes(), OF_IMAGE_COLOR);
+	videoPixels.setFromPixels( (unsigned char* ) oniImageGeneratorMD.Data(), 
+			oniImageGeneratorMD.XRes(), oniImageGeneratorMD.YRes(), OF_IMAGE_COLOR);
 
 	if(bUseTexture) {
 		videoTex.loadData(videoPixels);
@@ -299,25 +299,25 @@ void ofxONI1_5::updateColor() {
 
 void ofxONI1_5::updateUserTracker() {
 	if(bUseUserMap) {
-		g_UserGenerator.GetUserPixels(0,sceneMD);
+		oniUserGenerator.GetUserPixels(0,sceneMD);
 		userMap.setFromPixels( (unsigned short*) sceneMD.Data(), 
 				stream_width, stream_height, 1);
 	}
 
 	userData.clear();
 
-	unsigned short numUsers = g_UserGenerator.GetNumberOfUsers();
+	unsigned short numUsers = oniUserGenerator.GetNumberOfUsers();
 	XnUserID* userArray = new XnUserID[numUsers];
-	g_UserGenerator.GetUsers(userArray, numUsers);
+	oniUserGenerator.GetUsers(userArray, numUsers);
 	for(int i = 0; i < numUsers; i++) {
 		UserData d;
 		d.id = userArray[i];
 
 		XnPoint3D com;
-		g_UserGenerator.GetCoM(d.id, com);
+		oniUserGenerator.GetCoM(d.id, com);
 		d.centerOfMass = toOf(com);
 
-		xn::SkeletonCapability skeleton = g_UserGenerator.GetSkeletonCap();
+		xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
 
 		d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
 
@@ -442,15 +442,15 @@ float ofxONI1_5::getHeight(){
 
 
 bool ofxONI1_5::enableCalibratedRGBDepth(){
-	if(!g_image.IsValid()){
+	if(!oniImageGenerator.IsValid()){
 		printf("No Image generator found: cannot register viewport");
 		return false;
 	}
 
 	// Register view point to image map
-	if(g_DepthGenerator.IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
+	if(oniDepthGenerator.IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
 
-		XnStatus result = g_DepthGenerator.GetAlternativeViewPointCap().SetViewPoint(g_image);
+		XnStatus result = oniDepthGenerator.GetAlternativeViewPointCap().SetViewPoint(oniImageGenerator);
 		cout << ofToString((int)result) +  "Register viewport" << endl;
 		if(result != XN_STATUS_OK){
 			return false;
@@ -482,7 +482,7 @@ void ofxONI1_5::cbNewUser(xn::UserGenerator & generator, XnUserID nId) {
 	short userid = nId;
 	ofNotifyEvent(newUserEvent, userid);
 
-	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+	oniUserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 }
 
 // Callback for lost user.
@@ -514,12 +514,12 @@ void ofxONI1_5::cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUser
 	if(bSuccess){
 		// Calibration succeeded
 		ofLogVerbose("ofxONI1_5") << "UserTracker: calibration complete for user #" << nId;
-		g_UserGenerator.GetSkeletonCap().StartTracking(nId);
+		oniUserGenerator.GetSkeletonCap().StartTracking(nId);
 	}
 	else{
 		// Calibration failed
 		ofLogVerbose("ofxONI1_5") << "UserTracker: calibration failed for user #" << nId;
-		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+		oniUserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 	}
 }
 
@@ -528,7 +528,7 @@ void ofxONI1_5::cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUser
 //
 // void XN_CALLBACK_TYPE ofxONI1_5::UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
 // 	printf("Pose %s detected for user %d\n", strPose, nId);
-// 	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
-// 	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+// 	oniUserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
+// 	oniUserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 // }
 
