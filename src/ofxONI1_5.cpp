@@ -1,11 +1,5 @@
 #include "ofxONI1_5.h"
 
-// Declare static members in ofxONI1_5
-xn::Context ofxONI1_5::oniContext;
-xn::DepthGenerator ofxONI1_5::oniDepthGenerator;
-xn::UserGenerator ofxONI1_5::oniUserGenerator;
-xn::ImageGenerator ofxONI1_5::oniImageGenerator;
-
 ofxONI1_5::ofxONI1_5(){
 	bInited = false;
 	bIsConnected = false;

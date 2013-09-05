@@ -96,10 +96,10 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 	protected:
 
-		static xn::Context oniContext;
-		static xn::DepthGenerator oniDepthGenerator;
-		static xn::UserGenerator oniUserGenerator;
-		static xn::ImageGenerator oniImageGenerator;
+		xn::Context oniContext;
+		xn::DepthGenerator oniDepthGenerator;
+		xn::UserGenerator oniUserGenerator;
+		xn::ImageGenerator oniImageGenerator;
 
 		xn::SceneMetaData sceneMD;
 		xn::SceneMetaData playerMD;
