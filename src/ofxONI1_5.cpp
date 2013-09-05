@@ -98,7 +98,7 @@ bool ofxONI1_5::open(){
 
 	stream_width = depthMD.XRes();
 	stream_height = depthMD.YRes();
-	ref_max_depth = 0;
+	ref_max_depth = -1;
 	threshold = 3;
 	millis = ofGetElapsedTimeMillis();
 	counter = 0.0;
@@ -117,7 +117,11 @@ bool ofxONI1_5::open(){
 	videoPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 	videoPixelsBack.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 
-	depthPixels.allocate(stream_width, stream_height, 1);
+	if(bColorizeDepthImage) {
+		depthPixels.allocate(stream_width,stream_height, OF_IMAGE_COLOR);
+	} else {
+		depthPixels.allocate(stream_width,stream_height, 1);
+	}
 	distancePixels.allocate(stream_width, stream_height, 1);
 	playersPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR_ALPHA);
 	grayPixels.allocate(stream_width, stream_height, 1);
@@ -203,14 +207,14 @@ void ofxONI1_5::update(){
 		bIsFrameNew = true;
 		g_DepthGenerator.WaitAndUpdateData();
 		g_DepthGenerator.GetMetaData(depthMD);
-		//updateDepth();
+		updateDepth();
 	}
 
 	if(bColorOn && g_image.IsNewDataAvailable()) {
 		bIsFrameNew = true;
 		g_image.WaitAndUpdateData();
 		g_image.GetMetaData(g_imageMD);
-		//updateColor();
+		updateColor();
 	}
 
 	if(bUserTrackerOn && g_UserGenerator.IsNewDataAvailable()) {
@@ -222,126 +226,69 @@ void ofxONI1_5::update(){
 
 }
 
-void ofxONI1_5::calculateMaps(){
-	// Calculate the accumulative histogram
+void ofxONI1_5::updateDepth() {
+	// Data has type XnDepthPixel, should be typedef for uint16.
+	uint16_t *pDepth = (uint16_t*) depthMD.Data();
 
-	unsigned int nValue = 0;
-	unsigned int nHistValue = 0;
-	unsigned int nIndex = 0;
-	unsigned int nX = 0;
-	unsigned int nY = 0;
-	unsigned int nNumberOfPoints = 0;
-	const XnDepthPixel * pDepth = depthMD.Data();
-	const XnUInt8 * pImage = g_imageMD.Data();
-
-	memset(depthHist, 0, MAX_DEPTH * sizeof(float));
-	int n = 0;
-	for(nY = 0; nY < stream_height; nY++){
-		for(nX = 0; nX < stream_width; nX++, nIndex++){
-			nValue = pDepth[nIndex];
-
-			if(nValue != 0){
-				depthHist[nValue]++;
-				nNumberOfPoints++;
+	if(ref_max_depth == -1) {
+		for(int i = 0; i < stream_width*stream_height; i++) {
+			if(pDepth[i] > ref_max_depth) {
+				ref_max_depth = pDepth[i];
 			}
 		}
+
+		ofLogVerbose("ofxONI1_5") << "Max depth established to " << ref_max_depth;
 	}
 
-	for(nIndex = 1; nIndex < MAX_DEPTH; nIndex++){
-		depthHist[nIndex] += depthHist[nIndex - 1];
-	}
+	unsigned short *rawpixel = depthPixelsRaw.getPixels();
+	unsigned char  *depthpixel = depthPixels.getPixels();
+	float          *floatpixel = distancePixels.getPixels();
 
-	if(nNumberOfPoints){
-		for(nIndex = 1; nIndex < MAX_DEPTH; nIndex++){
-			depthHist[nIndex] = (unsigned int)(256 * (1.0f - (depthHist[nIndex] / nNumberOfPoints)));
-		}
-	}
+	ofColor c;
+	for(int i = 0; i < stream_width*stream_height; i++) {
+		rawpixel[i] = pDepth[i];
+		floatpixel[i] = rawpixel[i];
 
-	const XnLabel * pLabels = sceneMD.Data();
-	XnLabel label;
-	unsigned char hue;
-	ofColor color = ofColor(0, 0, 0);
-	unsigned short * rawpixel = depthPixelsRaw.getPixels();
-	unsigned char * depthpixel = depthPixels.getPixels();
-	unsigned char * playerspixel = playersPixels.getPixels();
-	float * floatpixel = distancePixels.getPixels();
-	unsigned char * graypixel = grayPixels.getPixels();
+		unsigned char hue = (unsigned char)(255.0 * (floatpixel[i] / ref_max_depth));
 
-	for(int i = 0; i < stream_width * stream_height; i++){
-		nValue = pDepth[i];
-		label = pLabels[i];
-		XnUInt32 nColorID = label % nColors;
-		if(label == 0){
-			nColorID = nColors;
-		}
-
-		if(nValue != 0){
-			if(ref_max_depth == 0){
-				if(nValue > ref_max_depth){
-					ref_max_depth = nValue;
-				}
-				cout << "Max depth establised to " << ref_max_depth << endl;
+		if(bColorizeDepthImage) {
+			if(rawpixel[i] > 0) {
+				c = ofColor::fromHsb(hue,255,255);
+			} else {
+				c = ofColor::black;
 			}
 
-			playerspixel[i * 4 + 0] = 255 * oniColors[nColorID][0];
-			playerspixel[i * 4 + 1] = 255 * oniColors[nColorID][1];
-			playerspixel[i * 4 + 2] = 255 * oniColors[nColorID][2];
-
-			playerspixel[i * 4 + 3] = 255 * int(max(oniColors[nColorID][0], max(oniColors[nColorID][1], oniColors[nColorID][2])));
-
-			depthpixel[3 * i + 0] = (nValue / 256 / 256) % 256;
-			depthpixel[3 * i + 1] = (nValue / 256) % 256;
-			depthpixel[3 * i + 2] = nValue % 256;
-
-
-			graypixel[i] = depthHist[nValue];
-
-			//DUNNO ABOUT THIS ONE
-			floatpixel[i] = depthHist[nValue];
-
-			rawpixel[i] = nValue;
-
-		}
-		else{
-
-			playerspixel[i * 4 + 0] = 0;
-			playerspixel[i * 4 + 1] = 0;
-			playerspixel[i * 4 + 2] = 0;
-			playerspixel[i * 4 + 3] = 0;
-
-			depthpixel[3 * i + 0] = 0;
-			depthpixel[3 * i + 1] = 0;
-			depthpixel[3 * i + 2] = 0;
-
-			graypixel[i] = 0;
-
-			floatpixel[i] = 0;
-
-			rawpixel[i] = 0;
+			depthpixel[3*i +0] = c.r;
+			depthpixel[3*i +1] = c.g;
+			depthpixel[3*i +2] = c.b;
+		} else {
+			depthpixel[i] = hue;
 		}
 	}
 
-
-	const XnRGB24Pixel * pImageRow = g_imageMD.RGB24Data(); // - g_imageMD.YOffset();
-
-	for(XnUInt y = 0; y < stream_height; ++y){
-		const XnRGB24Pixel * pImage = pImageRow; // + g_imageMD.XOffset();
-
-		for(XnUInt x = 0; x < stream_width; ++x, ++pImage){
-			int index = (y * stream_width + x) * 3;
-			gColorBuffer[index + 2] = (unsigned char)pImage->nBlue;
-			gColorBuffer[index + 1] = (unsigned char)pImage->nGreen;
-			gColorBuffer[index + 0] = (unsigned char)pImage->nRed;
+	if(bUseTexture) {
+		if(bColorizeDepthImage) {
+			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_RGB);
+		} else {
+			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_LUMINANCE);
 		}
-		pImageRow += stream_width;
 	}
-
-	videoPixels.setFromPixels(gColorBuffer, stream_width, stream_height, OF_IMAGE_COLOR);
-	//videoPixels.setFromPixels(gColorBuffer, width, height);
-
-
 
 }
+
+void ofxONI1_5::updateColor() {
+	// Color image is assumed to be 24 bit RGB.
+	videoPixels.setFromPixels( (unsigned char* ) g_imageMD.Data(), 
+			g_imageMD.XRes(), g_imageMD.YRes(), OF_IMAGE_COLOR);
+
+	if(bUseTexture) {
+		videoTex.loadData(videoPixels);
+	}
+}
+
+void ofxONI1_5::updateUserTracker() {
+}
+
 
 void ofxONI1_5::drawPlayers(float x, float y, float w, float h){
 	playersTex.draw(x, y, w, h);
