@@ -6,10 +6,6 @@ xn::DepthGenerator ofxONI1_5::g_DepthGenerator;
 xn::UserGenerator ofxONI1_5::g_UserGenerator;
 xn::ImageGenerator ofxONI1_5::g_image;
 
-XnBool ofxONI1_5::g_bNeedPose = false;
-XnChar ofxONI1_5::g_strPose[20] = "";
-
-
 ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateDepth = false;
 	bNeedsUpdateColor = false;
@@ -85,6 +81,11 @@ bool ofxONI1_5::open(){
 					ofxONI1_5::UserCalibration_CalibrationStart, 
 					ofxONI1_5::UserCalibration_CalibrationEnd, 
 					this, hCalibrationCallbacks);
+
+			if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()) {
+				ofLogWarning("ofxONI1_5") << "UserTracker: NeedPoseForCalibration returned true, update your version of OpenNI.";
+				//setUseUserTracker(false);
+			}
 
 			// 
 			// Since OpenNI update, pose is not needed for skeleton calibration.
@@ -525,11 +526,7 @@ void ofxONI1_5::cbNewUser(xn::UserGenerator & generator, XnUserID nId) {
 	short userid = nId;
 	ofNotifyEvent(newUserEvent, userid);
 
-	if(g_bNeedPose) {
-		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
-	} else {
-		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-	}
+	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 }
 
 // Callback for lost user.
@@ -566,12 +563,7 @@ void ofxONI1_5::cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUser
 	else{
 		// Calibration failed
 		ofLogVerbose("ofxONI1_5") << "UserTracker: calibration failed for user #" << nId;
-		if(g_bNeedPose){
-			g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
-		}
-		else{
-			g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-		}
+		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 	}
 }
 

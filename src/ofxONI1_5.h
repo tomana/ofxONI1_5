@@ -167,9 +167,6 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
 		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
 
-		static XnBool g_bNeedPose;
-		static XnChar g_strPose[20];
-
 		// Players
 		XnUserID * aUsers;
 		XnUInt16 nUsers;
