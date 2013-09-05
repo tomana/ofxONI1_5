@@ -108,17 +108,6 @@ bool ofxONI1_5::open(){
 	stream_width = depthMD.XRes();
 	stream_height = depthMD.YRes();
 	ref_max_depth = -1;
-	threshold = 3;
-	millis = ofGetElapsedTimeMillis();
-	counter = 0.0;
-
-	for(int i = 0; i < 15; i++){
-		for(int j = 0; j < 25; j++){
-			playerjoints[i][j] = ofVec3f(0, 0, 0);
-		}
-	}
-
-	activeplayers = {};
 
 	depthPixelsRaw.allocate(stream_width, stream_height, 1);
 
@@ -315,73 +304,73 @@ void ofxONI1_5::drawPlayers(float x, float y, float w, float h){
 }
 
 // DRAW SKELETON
-void ofxONI1_5::drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y){
-
-	if(!g_UserGenerator.GetSkeletonCap().IsTracking(player)){
-		printf("not tracked!\n");
-		return;
-	}
-
-	XnSkeletonJointPosition joint;
-	g_UserGenerator.GetSkeletonCap().GetSkeletonJointPosition(player, eJoint, joint);
-
-	if(joint.fConfidence < 0.5){
-		return;
-	}
-
-	XnPoint3D pt;
-	pt = joint.position;
-	float ptz = pt.Z;
-
-	float radZ = 25 - ptz / 100;
-	if(radZ < 3){
-		radZ = 3;
-	}
-
-	g_DepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
-
-	ofPushMatrix();
-	ofSetColor(255, 0, 0);
-	ofTranslate(x, y);
-	//ofTranslate(-width/2, -height/2);
-	//ofTranslate(0,0,-pt.Z);
-	ofCircle(pt.X, pt.Y, -3);
-	playerjoints[int(player)][int(eJoint)] = ofVec3f(pt.X, pt.Y, pt.Z);
-	//cout << ofToString(int(player)) + " " + ofToString(int(eJoint)) << endl;
-	ofPopMatrix();
-
-}
-void ofxONI1_5::drawSkeletons(int x, int y){
-	XnUserID aUsers[15];
-	XnUInt16 nUsers = 15;
-	ofPushMatrix();
-	g_UserGenerator.GetUsers(aUsers, nUsers);
-	activeplayers.clear();
-	for(int i = 0; i < nUsers; ++i){
-		if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])){
-			activeplayers.push_back(int(aUsers[i]));
-			drawSkeletonPt(aUsers[i], XN_SKEL_HEAD, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_NECK, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_SHOULDER, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_ELBOW, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HAND, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_SHOULDER, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_ELBOW, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HAND, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_TORSO, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HIP, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_KNEE, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_FOOT, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HIP, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_KNEE, x, y);
-			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_FOOT, x, y);
-
-
-//			DrawLimb(aUsers[i], XN_SKEL_LEFT_HIP, XN_SKEL_RIGHT_HIP);
-		}
-	}
-	ofPopMatrix();
-}
+// void ofxONI1_5::drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y){
+// 
+// 	if(!g_UserGenerator.GetSkeletonCap().IsTracking(player)){
+// 		printf("not tracked!\n");
+// 		return;
+// 	}
+// 
+// 	XnSkeletonJointPosition joint;
+// 	g_UserGenerator.GetSkeletonCap().GetSkeletonJointPosition(player, eJoint, joint);
+// 
+// 	if(joint.fConfidence < 0.5){
+// 		return;
+// 	}
+// 
+// 	XnPoint3D pt;
+// 	pt = joint.position;
+// 	float ptz = pt.Z;
+// 
+// 	float radZ = 25 - ptz / 100;
+// 	if(radZ < 3){
+// 		radZ = 3;
+// 	}
+// 
+// 	g_DepthGenerator.ConvertRealWorldToProjective(1, &pt, &pt);
+// 
+// 	ofPushMatrix();
+// 	ofSetColor(255, 0, 0);
+// 	ofTranslate(x, y);
+// 	//ofTranslate(-width/2, -height/2);
+// 	//ofTranslate(0,0,-pt.Z);
+// 	ofCircle(pt.X, pt.Y, -3);
+// 	playerjoints[int(player)][int(eJoint)] = ofVec3f(pt.X, pt.Y, pt.Z);
+// 	//cout << ofToString(int(player)) + " " + ofToString(int(eJoint)) << endl;
+// 	ofPopMatrix();
+// 
+// }
+// void ofxONI1_5::drawSkeletons(int x, int y){
+// 	XnUserID aUsers[15];
+// 	XnUInt16 nUsers = 15;
+// 	ofPushMatrix();
+// 	g_UserGenerator.GetUsers(aUsers, nUsers);
+// 	activeplayers.clear();
+// 	for(int i = 0; i < nUsers; ++i){
+// 		if(g_UserGenerator.GetSkeletonCap().IsTracking(aUsers[i])){
+// 			activeplayers.push_back(int(aUsers[i]));
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_HEAD, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_NECK, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_SHOULDER, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_ELBOW, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HAND, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_SHOULDER, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_ELBOW, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HAND, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_TORSO, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_HIP, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_KNEE, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_LEFT_FOOT, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_HIP, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_KNEE, x, y);
+// 			drawSkeletonPt(aUsers[i], XN_SKEL_RIGHT_FOOT, x, y);
+// 
+// 
+// //			DrawLimb(aUsers[i], XN_SKEL_LEFT_HIP, XN_SKEL_RIGHT_HIP);
+// 		}
+// 	}
+// 	ofPopMatrix();
+// }
 
 bool ofxONI1_5::isConnected(){
 	return bIsConnected;//isThreadRunning();

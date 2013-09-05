@@ -12,15 +12,7 @@
 		printf("%s failed: %s\n", what, xnGetStatusString(nRetVal)); \
 	}
 
-
-
-//#define SAMPLE_XML_PATH "data/Sample-User.xml"
-#define SAMPLE_XML_PATH "../bin/data/SamplesConfig.xml"
-
-#define MAX_DEPTH 10000
-
-static XnFloat oniColors[][3] =
-{
+static XnFloat oniColors[][3] = {
 	{0, 1, 1},
 	{0, 1, 0},
 	{0, 0, 1},
@@ -124,33 +116,17 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 
 		// Functions for skeleton parts.
-		void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
-		void drawSkeletons(int x, int y);
-
-		void calculateMaps();
+		// void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
+		// void drawSkeletons(int x, int y);
 
 		xn::SceneMetaData sceneMD;
 		xn::SceneMetaData playerMD;
 		xn::DepthMetaData depthMD;
 		xn::ImageMetaData g_imageMD;
 
-		int millis;
-
-		float depthHist[MAX_DEPTH];
-		unsigned char gColorBuffer[640 * 480 * 3];         // BGRA
-
-		bool color_depth_bool;
-
-		float counter;
-
-		int width, height;
 		int stream_width, stream_height;
-		int threshold;
 
-		// maxdepth
 		float ref_max_depth;
-
-		//Calib
 
 		bool enableCalibratedRGBDepth();
 
@@ -161,9 +137,6 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		// clear resources
 		void clear();
-
-		ofVec3f playerjoints[15][25];
-		vector <int> activeplayers;
 
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
