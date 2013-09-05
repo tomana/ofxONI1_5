@@ -31,8 +31,9 @@ bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth
 
 
 
-	printf("InitFromXmlFile\n");
-	nRetVal = g_Context.InitFromXmlFile(SAMPLE_XML_PATH);
+	// printf("InitFromXmlFile\n");
+	// nRetVal = g_Context.InitFromXmlFile(SAMPLE_XML_PATH);
+	nRetVal = g_Context.Init();
 	CHECK_RC(nRetVal, "InitFromXml");
 	return true;
 }
@@ -41,19 +42,22 @@ bool ofxONI1_5::open(){
 	XnStatus nRetVal = XN_STATUS_OK;
 
 	printf("FindExistingNode\n");
-	nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, g_DepthGenerator);
+	//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, g_DepthGenerator);
+	nRetVal = g_DepthGenerator.Create(g_Context);
 	CHECK_RC(nRetVal, "Find depth generator");
 
 	if(bDrawPlayers){
-		nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_USER, g_UserGenerator);
+		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_USER, g_UserGenerator);
+		nRetVal = g_UserGenerator.Create(g_Context);
 		if(nRetVal != XN_STATUS_OK){
 			nRetVal = g_UserGenerator.Create(g_Context);
 			CHECK_RC(nRetVal, "Find user generator");
 		}
 	}
 	if(bGrabVideo){
-		printf("FindExistingNode\n");
-		nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, g_image);
+		//printf("FindExistingNode\n");
+		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, g_image);
+		nRetVal = g_image.Create(g_Context);
 		CHECK_RC(nRetVal, "Find image generator");
 	}
 
