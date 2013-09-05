@@ -84,6 +84,8 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		void drawSkeletonOverlay(const ofPoint & point){ drawSkeletonOverlay(point.x, point.y); }
 		void drawSkeletonOverlay(const ofRectangle & rect){ drawSkeletonOverlay(rect.x, rect.y, rect.width, rect.height); }
 
+		string& getUserTrackerDebugString() { return stringUserTrackerDebug; }
+
 		float getWidth();
 		float getHeight();
 
@@ -139,7 +141,6 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		bool bSkeletonTrackerOn;
 
 		string stringUserTrackerDebug;
-		string& getUserTrackerDebugString() { return stringUserTrackerDebug; }
 
 		ofTexture colorTex;
 		ofTexture depthTex;

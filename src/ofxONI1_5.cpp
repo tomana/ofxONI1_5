@@ -341,6 +341,8 @@ void ofxONI1_5::updateUserTracker() {
 	unsigned short numUsers = oniUserGenerator.GetNumberOfUsers();
 	XnUserID* userArray = new XnUserID[numUsers];
 	oniUserGenerator.GetUsers(userArray, numUsers);
+
+	debugString << "Number of users found: " << numUsers << endl;
 	for(int i = 0; i < numUsers; i++) {
 		UserData d;
 		d.id = userArray[i];
@@ -354,12 +356,15 @@ void ofxONI1_5::updateUserTracker() {
 			xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
 
 			d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
+			debugString << "\tSkeleton available: " << (d.isSkeletonAvailable ? "yes" : "no") << endl;
 
 			for(int i = 0; i < trackedJoints.size(); i++) {
 				XnSkeletonJoint joint = trackedJoints[i];
 				XnSkeletonJointPosition jointdata;
 				skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
 				d.skeletonPoints[joint] = toOf(jointdata.position);
+
+				debugString << "\tJoint " << joint << " at " << d.skeletonPoints[joint] << endl;
 			}
 		} else {
 			d.isSkeletonAvailable = false;
@@ -367,6 +372,8 @@ void ofxONI1_5::updateUserTracker() {
 
 		userData.push_back(d);
 	}
+
+	stringUserTrackerDebug = debugString.str();
 
 	if(bUseUserMap) {
 		oniUserGenerator.GetUserPixels(0,sceneMD);
