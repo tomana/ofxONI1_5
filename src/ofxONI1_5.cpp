@@ -206,6 +206,9 @@ bool ofxONI1_5::open(){
 
 	if(bUserTrackerOn) {
 		userMap.allocate(stream_width, stream_height, 1);
+		if(bUseUserMapImage) {
+			userMapImageTex.allocate(stream_width, stream_height, GL_RGB);
+		}
 	}
 
 	if(bUseCalibratedRGBDepth) {
@@ -331,16 +334,9 @@ void ofxONI1_5::updateColor() {
 	}
 }
 
-
-
 void ofxONI1_5::updateUserTracker() {
-	if(bUseUserMap) {
-		oniUserGenerator.GetUserPixels(0,sceneMD);
-		userMap.setFromPixels( (unsigned short*) sceneMD.Data(), 
-				stream_width, stream_height, 1);
-	}
-
 	userData.clear();
+	ostringstream debugString;
 
 	unsigned short numUsers = oniUserGenerator.GetNumberOfUsers();
 	XnUserID* userArray = new XnUserID[numUsers];
@@ -352,20 +348,46 @@ void ofxONI1_5::updateUserTracker() {
 		XnPoint3D com;
 		oniUserGenerator.GetCoM(d.id, com);
 		d.centerOfMass = toOf(com);
+		debugString << "User #" << d.id << ", center of mass: " << d.centerOfMass << endl;
 
-		xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
+		if(bUseSkeletonTracker) {
+			xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
 
-		d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
+			d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
 
-		for(int i = 0; i < trackedJoints.size(); i++) {
-			XnSkeletonJoint joint = trackedJoints[i];
-			XnSkeletonJointPosition jointdata;
-			skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
-			d.skeletonPoints[joint] = toOf(jointdata.position);
+			for(int i = 0; i < trackedJoints.size(); i++) {
+				XnSkeletonJoint joint = trackedJoints[i];
+				XnSkeletonJointPosition jointdata;
+				skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
+				d.skeletonPoints[joint] = toOf(jointdata.position);
+			}
+		} else {
+			d.isSkeletonAvailable = false;
 		}
 
 		userData.push_back(d);
 	}
+
+	if(bUseUserMap) {
+		oniUserGenerator.GetUserPixels(0,sceneMD);
+		unsigned short* userMapPixels = (unsigned short*) sceneMD.Data();
+		userMap.setFromPixels( userMapPixels,
+				stream_width, stream_height, 1);
+
+		if(bUseUserMapImage) {
+			unsigned char* p = new unsigned char[3*stream_width*stream_height];
+			for(int i = 0; i < stream_width*stream_height; i++) {
+				short id = userMapPixels[i];
+				p[3*i + 0] = 255.0*oniColors[id%nColors][0];
+				p[3*i + 1] = 255.0*oniColors[id%nColors][1];
+				p[3*i + 2] = 255.0*oniColors[id%nColors][2];
+			}
+
+			userMapImageTex.loadData(p,stream_width,stream_height,GL_RGB);
+			delete p;
+		}
+	}
+
 }
 
 bool ofxONI1_5::isConnected(){
@@ -400,6 +422,33 @@ void ofxONI1_5::enableCalibratedRGBDepth(){
 void ofxONI1_5::draw(float x, float y, float w, float h){
 	if(bUseTexture && bUseColorImage && bColorOn){
 		colorTex.draw(x, y, w, h);
+	}
+}
+
+void ofxONI1_5::drawUsers(float x, float y, float w, float h){
+	if(bUseUserTracker && bUseUserMapImage){
+		userMapImageTex.draw(x, y, w, h);
+	}
+}
+
+void ofxONI1_5::drawSkeletonOverlay(float x, float y, float w, float h) {
+	if(bUseUserTracker && bUseSkeletonTracker) {
+		ofPushStyle();
+		ofFill();
+		ofSetColor(ofColor::red,255);
+		for(int i = 0; i < userData.size(); i++) {
+			if(userData[i].isSkeletonAvailable) {
+				for(int j = 0; j < trackedJoints.size(); j++) {
+					ofVec3f p = userData[i].skeletonPoints[trackedJoints[j]];
+					p = coordsRealToProjective(p);
+					p.x = ofMap(p.x, 0, stream_width, 0, w)   + x;
+					p.y = ofMap(p.y, 0, stream_height, 0, h)  + y;
+					ofCircle(ofPoint(p.x,p.y),5);
+				}
+			}
+		}
+		ofPopStyle();
+		
 	}
 }
 

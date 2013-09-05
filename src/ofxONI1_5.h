@@ -58,6 +58,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		// Textures:
 		ofTexture& getTextureReference() { return colorTex; }
 		ofTexture& getDepthTextureReference() { return depthTex; }
+		ofTexture& getUserMapImageTextureReference() { return userMapImageTex; }
 
 		// Draw the color texture
 		void draw(float x, float y, float w, float h);
@@ -76,6 +77,12 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		void drawUsers(float x, float y){ drawUsers(x, y, stream_width, stream_height); }
 		void drawUsers(const ofPoint & point){ drawUsers(point.x, point.y); }
 		void drawUsers(const ofRectangle & rect){ drawUsers(rect.x, rect.y, rect.width, rect.height); }
+
+		// Draw skeleton overlay image
+		void drawSkeletonOverlay(float x, float y, float w, float h);
+		void drawSkeletonOverlay(float x, float y){ drawSkeletonOverlay(x, y, stream_width, stream_height); }
+		void drawSkeletonOverlay(const ofPoint & point){ drawSkeletonOverlay(point.x, point.y); }
+		void drawSkeletonOverlay(const ofRectangle & rect){ drawSkeletonOverlay(rect.x, rect.y, rect.width, rect.height); }
 
 		float getWidth();
 		float getHeight();
@@ -131,6 +138,8 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		bool bUserTrackerOn;
 		bool bSkeletonTrackerOn;
 
+		string stringUserTrackerDebug;
+		string& getUserTrackerDebugString() { return stringUserTrackerDebug; }
 
 		ofTexture colorTex;
 		ofTexture depthTex;
@@ -177,6 +186,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 
 static XnFloat oniColors[][3] = {
+	{0, 0, 0},
 	{0, 1, 1},
 	{0, 1, 0},
 	{0, 0, 1},
@@ -187,7 +197,6 @@ static XnFloat oniColors[][3] = {
 	{0, .5, 1},
 	{.5, 0, 1},
 	{1, 1, .5},
-	{0, 0, 0}
 };
 
 static XnUInt32 nColors = 10;
