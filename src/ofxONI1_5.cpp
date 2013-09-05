@@ -121,10 +121,8 @@ bool ofxONI1_5::open(){
 	activeplayers = {};
 
 	depthPixelsRaw.allocate(stream_width, stream_height, 1);
-	depthPixelsRawBack.allocate(stream_width, stream_height, 1);
 
 	videoPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
-	videoPixelsBack.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 
 	if(bColorizeDepthImage) {
 		depthPixels.allocate(stream_width,stream_height, OF_IMAGE_COLOR);
@@ -136,10 +134,8 @@ bool ofxONI1_5::open(){
 	grayPixels.allocate(stream_width, stream_height, 1);
 
 	depthPixelsRaw.set(0);
-	depthPixelsRawBack.set(0);
 
 	videoPixels.set(0);
-	videoPixelsBack.set(0);
 
 	depthPixels.set(0);
 	playersPixels.set(0);

@@ -235,9 +235,6 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;
 
-		ofShortPixels depthPixelsRawBack;
-		ofPixels videoPixelsBack;
-
 		void updateDepth();
 		void updateColor();
 		void updateUserTracker();
