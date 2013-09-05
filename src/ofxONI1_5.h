@@ -94,51 +94,27 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		// Draw the video texture
 		void draw(float x, float y, float w, float h);
-		void draw(float x, float y){
-			draw(x, y, stream_width, stream_height);
-		}
-		void draw(const ofPoint & point){
-			draw(point.x, point.y);
-		}
-		void draw(const ofRectangle & rect){
-			draw(rect.x, rect.y, rect.width, rect.height);
-		}
+		void draw(float x, float y){ draw(x, y, stream_width, stream_height); }
+		void draw(const ofPoint & point){ draw(point.x, point.y); }
+		void draw(const ofRectangle & rect){ draw(rect.x, rect.y, rect.width, rect.height); }
 
 		// Draw the depth texture
 		void drawDepth(float x, float y, float w, float h);
-		void drawDepth(float x, float y){
-			drawDepth(x, y, stream_width, stream_height);
-		}
-		void drawDepth(const ofPoint & point){
-			drawDepth(point.x, point.y);
-		}
-		void drawDepth(const ofRectangle & rect){
-			drawDepth(rect.x, rect.y, rect.width, rect.height);
-		}
+		void drawDepth(float x, float y){ drawDepth(x, y, stream_width, stream_height); }
+		void drawDepth(const ofPoint & point){ drawDepth(point.x, point.y); }
+		void drawDepth(const ofRectangle & rect){ drawDepth(rect.x, rect.y, rect.width, rect.height); }
 
 		// Draw player image
 		void drawPlayers(float x, float y, float w, float h);
-		void drawPlayers(float x, float y){
-			drawPlayers(x, y, stream_width, stream_height);
-		}
-		void drawPlayers(const ofPoint & point){
-			drawPlayers(point.x, point.y);
-		}
-		void drawPlayers(const ofRectangle & rect){
-			drawPlayers(rect.x, rect.y, rect.width, rect.height);
-		}
+		void drawPlayers(float x, float y){ drawPlayers(x, y, stream_width, stream_height); }
+		void drawPlayers(const ofPoint & point){ drawPlayers(point.x, point.y); }
+		void drawPlayers(const ofRectangle & rect){ drawPlayers(rect.x, rect.y, rect.width, rect.height); }
 
 		// Draw gray depth texture
 		void drawGrayDepth(float x, float y, float w, float h);
-		void drawGrayDepth(float x, float y){
-			drawGrayDepth(x, y, stream_width, stream_height);
-		}
-		void drawGrayDepth(const ofPoint & point){
-			drawGrayDepth(point.x, point.y);
-		}
-		void drawGrayDepth(const ofRectangle & rect){
-			drawGrayDepth(rect.x, rect.y, rect.width, rect.height);
-		}
+		void drawGrayDepth(float x, float y){ drawGrayDepth(x, y, stream_width, stream_height); }
+		void drawGrayDepth(const ofPoint & point){ drawGrayDepth(point.x, point.y); }
+		void drawGrayDepth(const ofRectangle & rect){ drawGrayDepth(rect.x, rect.y, rect.width, rect.height); }
 
 		// Not implemented. Should probably not be here.
 		void draw3D();
