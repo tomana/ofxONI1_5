@@ -82,6 +82,10 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		ofVec3f toOf(XnVector3D p) { return ofVec3f(p.X, p.Y, p.Z); }
 
+		// Convert OpenNI "real" coordinates to camera pixel coordinates and the reverse
+		ofVec3f coordsRealToProjective(ofVec3f v);
+		ofVec3f coordsProjectiveToReal(ofVec3f v);
+
 
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;

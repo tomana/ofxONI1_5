@@ -417,6 +417,18 @@ float ofxONI1_5::getHeight(){
 	return stream_height;
 }
 
+ofVec3f ofxONI1_5::coordsRealToProjective(ofVec3f v) {
+	XnVector3D p = {v.x, v.y, v.z};
+	oniDepthGenerator.ConvertRealWorldToProjective(1,&p,&p);
+	return ofVec3f(p.X, p.Y, p.Z);
+}
+
+ofVec3f ofxONI1_5::coordsProjectiveToReal(ofVec3f v) {
+	XnVector3D p = {v.x, v.y, v.z};
+	oniDepthGenerator.ConvertProjectiveToRealWorld(1,&p,&p);
+	return ofVec3f(p.X, p.Y, p.Z);
+}
+
 
 //
 //
