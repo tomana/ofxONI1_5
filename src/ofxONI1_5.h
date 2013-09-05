@@ -165,6 +165,9 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofVec3f playerjoints[15][25];
 		vector <int> activeplayers;
 
+		ofEvent<short> newUserEvent;
+		ofEvent<short> lostUserEvent;
+
 	protected:
 
 		static xn::Context g_Context;
@@ -172,11 +175,24 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		static xn::UserGenerator g_UserGenerator;
 		static xn::ImageGenerator g_image;
 
+		// OpenNI callback functions must be static, but pCookie can be used
+		// to send a pointer to the current instance. This is used in turn to 
+		// call the cb...() funcions.
+		//
 		static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
+		void cbNewUser(xn::UserGenerator & generator, XnUserID nId);
+
 		static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
-		static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
+		void cbLostUser(xn::UserGenerator & generator, XnUserID nId);
+
 		static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie);
+		void cbUserCalibrationStart(xn::SkeletonCapability & capability, XnUserID nId);
+
 		static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie);
+		void cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess);
+
+		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
+		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
 
 		static XnBool g_bNeedPose;
 		static XnChar g_strPose[20];

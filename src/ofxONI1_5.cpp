@@ -71,27 +71,36 @@ bool ofxONI1_5::open(){
 
 	// old
 	if(bDrawSkeleton){
-		XnCallbackHandle hUserCBs;
-
-		XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 		if(!g_UserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
 			printf("Supplied user generator doesn't support skeleton\n");
-//		return;
-		}
-		g_UserGenerator.RegisterUserCallbacks(ofxONI1_5::User_NewUser, ofxONI1_5::User_LostUser, NULL, hUserCallbacks);
-		g_UserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(ofxONI1_5::UserCalibration_CalibrationStart, ofxONI1_5::UserCalibration_CalibrationEnd, NULL, hCalibrationCallbacks);
+		} else {
+			XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 
-		if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
-			g_bNeedPose = TRUE;
-			if(!g_UserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
-				printf("Pose required, but not supported\n");
-//			return 1;
-			}
-			g_UserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(ofxONI1_5::UserPose_PoseDetected, NULL, NULL, hPoseCallbacks);
-			g_UserGenerator.GetSkeletonCap().GetCalibrationPose(g_strPose);
-		}
+			g_UserGenerator.RegisterUserCallbacks(
+					ofxONI1_5::User_NewUser, 
+					ofxONI1_5::User_LostUser, 
+					this, hUserCallbacks);
 
-		g_UserGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+			g_UserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(
+					ofxONI1_5::UserCalibration_CalibrationStart, 
+					ofxONI1_5::UserCalibration_CalibrationEnd, 
+					this, hCalibrationCallbacks);
+
+			// 
+			// Since OpenNI update, pose is not needed for skeleton calibration.
+			// Will not implement any pose detection as of now.
+			//
+			// if(g_UserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
+			// 	g_bNeedPose = TRUE;
+			// 	if(!g_UserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
+			// 		printf("Pose required, but not supported\n");
+			// 	}
+			// 	g_UserGenerator.GetPoseDetectionCap().RegisterToPoseCallbacks(ofxONI1_5::UserPose_PoseDetected, NULL, this, hPoseCallbacks);
+			// 	g_UserGenerator.GetSkeletonCap().GetCalibrationPose(g_strPose);
+			// }
+
+			g_UserGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+		}
 	}
 
 	g_DepthGenerator.GetMetaData(depthMD);
@@ -513,40 +522,65 @@ bool ofxONI1_5::enableCalibratedRGBDepth(){
 	return true;
 }
 
-void XN_CALLBACK_TYPE ofxONI1_5::User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
-	printf("New User %d\n", nId);
+//
+//
+// User tracker callbacks. Must be static.
+// *pCookie is set to pointer to ofxONI1_5 object (this), 
+// so the static method can call the non-static method.
+//
+//
 
-	if(g_bNeedPose){
+// Callback for new user.
+void XN_CALLBACK_TYPE ofxONI1_5::User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
+	((ofxONI1_5*)pCookie)->cbNewUser(generator,nId);
+}
+
+void ofxONI1_5::cbNewUser(xn::UserGenerator & generator, XnUserID nId) {
+	ofLogVerbose("ofxONI1_5") << "UserTracker: new user #" << nId;
+	short userid = nId;
+	ofNotifyEvent(newUserEvent, userid);
+
+	if(g_bNeedPose) {
 		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
-	}
-	else{
+	} else {
 		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 	}
 }
+
+// Callback for lost user.
 void XN_CALLBACK_TYPE ofxONI1_5::User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
-	printf("Lost User id: %i\n", (unsigned int)nId);
+	((ofxONI1_5*)pCookie)->cbLostUser(generator,nId);
 }
 
-// Callback: Detected a pose
-void XN_CALLBACK_TYPE ofxONI1_5::UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
-	printf("Pose %s detected for user %d\n", strPose, nId);
-	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
-	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+void ofxONI1_5::cbLostUser(xn::UserGenerator & generator, XnUserID nId) {
+	ofLogVerbose("ofxONI1_5") << "UserTracker: lost user #" << nId;
+	short userid = nId;
+	ofNotifyEvent(lostUserEvent, userid);
 }
-// Callback: Started calibration
+
+// Callback for skeleton calibration start.
 void XN_CALLBACK_TYPE ofxONI1_5::UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie){
-	printf("Calibration started for user %d\n", nId);
+	((ofxONI1_5*)pCookie)->cbUserCalibrationStart(capability, nId);
 }
-// Callback: Finished calibration
+
+void ofxONI1_5::cbUserCalibrationStart(xn::SkeletonCapability& capability, XnUserID nId) {
+	ofLogVerbose("ofxONI1_5") << "UserTracker: starting skeleton calibration for user #" << nId;
+}
+
+// Callback for skeleton calibration end.
 void XN_CALLBACK_TYPE ofxONI1_5::UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie){
+	((ofxONI1_5*)pCookie)->cbUserCalibrationEnd(capability,nId,bSuccess);
+}
+
+void ofxONI1_5::cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess) {
 	if(bSuccess){
 		// Calibration succeeded
-		printf("Calibration complete, start tracking user %d\n", nId);
+		ofLogVerbose("ofxONI1_5") << "UserTracker: calibration complete for user #" << nId;
 		g_UserGenerator.GetSkeletonCap().StartTracking(nId);
 	}
 	else{
 		// Calibration failed
-		printf("Calibration failed for user %d\n", nId);
+		ofLogVerbose("ofxONI1_5") << "UserTracker: calibration failed for user #" << nId;
 		if(g_bNeedPose){
 			g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
 		}
@@ -555,4 +589,13 @@ void XN_CALLBACK_TYPE ofxONI1_5::UserCalibration_CalibrationEnd(xn::SkeletonCapa
 		}
 	}
 }
+
+
+// Callback for pose detection. Not used.
+//
+// void XN_CALLBACK_TYPE ofxONI1_5::UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
+// 	printf("Pose %s detected for user %d\n", strPose, nId);
+// 	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
+// 	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
+// }
 
