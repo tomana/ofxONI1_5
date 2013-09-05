@@ -173,23 +173,23 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
 
 		bool bInited;
+		bool bIsConnected;
+		bool bIsFrameNew;
 
 		bool bUseTexture;
-		bool bGrabVideo;
-		bool bColorizeDepthImage;
-		bool bDrawSkeleton;
-		bool bDrawPlayers;
+		bool bUseColorImage;
+		bool bUseColorizedDepthImage;
+		bool bUseCalibratedRGBDepth;
+		bool bUseUserTracker;
+		bool bUseUserMap;
+		bool bUseUserMapImage;
+		bool bUseSkeletonTracker;
 
 		bool bDepthOn;
 		bool bColorOn;
 		bool bUserTrackerOn;
-		bool bUseUserMap;
-		bool bIsConnected;
+		bool bSkeletonTrackerOn;
 
-		bool bIsFrameNew;
-		bool bNeedsUpdateColor;
-		bool bNeedsUpdateDepth;
-		bool bUpdateTex;
 
 		ofTexture videoTex;
 		ofTexture depthTex;

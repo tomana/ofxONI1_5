@@ -7,16 +7,69 @@ xn::UserGenerator ofxONI1_5::oniUserGenerator;
 xn::ImageGenerator ofxONI1_5::oniImageGenerator;
 
 ofxONI1_5::ofxONI1_5(){
-	bNeedsUpdateDepth = false;
-	bNeedsUpdateColor = false;
-	bIsConnected = false;
-	bUseUserMap = true;
 	bInited = false;
+	bIsConnected = false;
+	bIsFrameNew = false;
+
+	// Defaults for optional features
+	bUseTexture = true;
+	bUseColorImage = true;
+	bUseColorizedDepthImage = true;
+	bUseUserTracker = true;
+	bUseUserMap = true;
+	bUseUserMapImage = true;
+	bUseSkeletonTracker = true;
+
+	bDepthOn = false;
+	bColorOn = false;
+	bUserTrackerOn = false;
+	bSkeletonTrackerOn = false;
 }
 
 ofxONI1_5::~ofxONI1_5(){
 
 }
+
+void ofxONI1_5::setUseTexture(bool b) {
+	bUseTexture = b;
+}
+
+void ofxONI1_5::setUseColorImage(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseColorImage() must be called before init().";
+	bUseColorImage = b;
+}
+
+void ofxONI1_5::setUseColorizedDepthImage(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseColorizedDepthImage() must be called before init().";
+	bUseColorizedDepthImage = b;
+}
+
+void ofxONI1_5::setUseCalibratedRGBDepth(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseCalibratedRGBDepth() must be called before init().";
+	bUseCalibratedRGBDepth = b;
+}
+
+void ofxONI1_5::setUseUserTracker(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseUserTracker() must be called before init().";
+	bUseUserTracker = b;
+}
+
+void ofxONI1_5::setUseUserMap(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseUserMap() must be called before init().";
+	bUseUserMap = b;
+}
+
+void ofxONI1_5::setUseUserMapImage(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseUserMapImage() must be called before init().";
+	bUseUserMapImage = b;
+}
+
+void ofxONI1_5::setUseSkeletonTracker(bool b) {
+	if(bInited) ofLogWarning("ofxONI1_5") << "setUseSkeletonTracker() must be called before init().";
+	bUseSkeletonTracker = b;
+}
+
+
 
 XnSkeletonJoint trackedJointsArray[] = { 
 	XN_SKEL_HEAD, XN_SKEL_NECK, XN_SKEL_TORSO, XN_SKEL_WAIST,
@@ -28,14 +81,7 @@ XnSkeletonJoint trackedJointsArray[] = {
        	XN_SKEL_LEFT_FOOT, XN_SKEL_RIGHT_HIP, XN_SKEL_RIGHT_KNEE,
        	XN_SKEL_RIGHT_ANKLE, XN_SKEL_RIGHT_FOOT };
 
-bool ofxONI1_5::init(bool use_color_image, bool use_texture, bool colorize_depth_image, bool use_players, bool use_skeleton){
-
-	bUseTexture = use_texture;
-	bGrabVideo = use_color_image;
-	bColorizeDepthImage = colorize_depth_image;
-	bDrawPlayers = use_players;
-	bDrawSkeleton = use_skeleton;
-
+bool ofxONI1_5::init() {
 	trackedJoints.assign(trackedJointsArray, trackedJointsArray + sizeof(trackedJointsArray)/sizeof(trackedJointsArray[0]));
 
 	XnStatus nRetVal = oniContext.Init();
@@ -65,7 +111,7 @@ bool ofxONI1_5::open(){
 	//
 	// Open user generator stream
 	//
-	if(bDrawPlayers){
+	if(bUseUserTracker){
 		nRetVal = oniUserGenerator.Create(oniContext);
 		if(nRetVal != XN_STATUS_OK){
 			ofLogWarning("ofxONI1_5") << "Unable to open user generator stream: " << xnGetStatusString(nRetVal);
@@ -77,7 +123,7 @@ bool ofxONI1_5::open(){
 	//
 	// Open color/video stream
 	//
-	if(bGrabVideo){
+	if(bUseColorImage){
 		nRetVal = oniImageGenerator.Create(oniContext);
 		if(nRetVal != XN_STATUS_OK){
 			ofLogWarning("ofxONI1_5") << "Unable to open video generator stream: " << xnGetStatusString(nRetVal);
@@ -92,7 +138,7 @@ bool ofxONI1_5::open(){
 	} 
 
 
-	if(bDrawSkeleton){
+	if(bUseSkeletonTracker){
 		if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
 			ofLogWarning("ofxONI1_5") << "UserTracker: Skeleton capability not supported.";
 		} else {
@@ -127,6 +173,8 @@ bool ofxONI1_5::open(){
 			// }
 
 			oniUserGenerator.GetSkeletonCap().SetSkeletonProfile(XN_SKEL_PROFILE_ALL);
+
+			bSkeletonTrackerOn = true;
 		}
 	}
 
@@ -275,7 +323,7 @@ void ofxONI1_5::updateDepth() {
 
 		unsigned char hue = (unsigned char)(255.0 * (floatpixel[i] / ref_max_depth));
 
-		if(bColorizeDepthImage) {
+		if(bUseColorizedDepthImage) {
 			if(rawpixel[i] > 0) {
 				c = ofColor::fromHsb(hue,255,255);
 			} else {
@@ -291,7 +339,7 @@ void ofxONI1_5::updateDepth() {
 	}
 
 	if(bUseTexture) {
-		if(bColorizeDepthImage) {
+		if(bUseColorizedDepthImage) {
 			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_RGB);
 		} else {
 			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_LUMINANCE);
