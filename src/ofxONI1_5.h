@@ -71,58 +71,24 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		void drawDepth(const ofPoint & point){ drawDepth(point.x, point.y); }
 		void drawDepth(const ofRectangle & rect){ drawDepth(rect.x, rect.y, rect.width, rect.height); }
 
-		// Draw player image
-		void drawPlayers(float x, float y, float w, float h);
-		void drawPlayers(float x, float y){ drawPlayers(x, y, stream_width, stream_height); }
-		void drawPlayers(const ofPoint & point){ drawPlayers(point.x, point.y); }
-		void drawPlayers(const ofRectangle & rect){ drawPlayers(rect.x, rect.y, rect.width, rect.height); }
-
-		// Draw gray depth texture
-		void drawGrayDepth(float x, float y, float w, float h);
-		void drawGrayDepth(float x, float y){ drawGrayDepth(x, y, stream_width, stream_height); }
-		void drawGrayDepth(const ofPoint & point){ drawGrayDepth(point.x, point.y); }
-		void drawGrayDepth(const ofRectangle & rect){ drawGrayDepth(rect.x, rect.y, rect.width, rect.height); }
-
-		// Not implemented. Should probably not be here.
-		void draw3D();
+		// Draw user image
+		void drawUsers(float x, float y, float w, float h);
+		void drawUsers(float x, float y){ drawUsers(x, y, stream_width, stream_height); }
+		void drawUsers(const ofPoint & point){ drawUsers(point.x, point.y); }
+		void drawUsers(const ofRectangle & rect){ drawUsers(rect.x, rect.y, rect.width, rect.height); }
 
 		float getWidth();
 		float getHeight();
 
 		ofVec3f toOf(XnVector3D p) { return ofVec3f(p.X, p.Y, p.Z); }
 
-		// Functions for skeleton parts.
-		// void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
-		// void drawSkeletons(int x, int y);
-
-		xn::SceneMetaData sceneMD;
-		xn::SceneMetaData playerMD;
-		xn::DepthMetaData depthMD;
-		xn::ImageMetaData oniImageGeneratorMD;
-
-		int stream_width, stream_height;
-
-		float ref_max_depth;
-
-		bool enableCalibratedRGBDepth();
-
-		//Grid for shader
-		ofVboMesh kinect_grid;
-
-		void generate_grid();
-
-		// clear resources
-		void clear();
 
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
 
 		struct UserData {
-			// ofVec3f boundingBoxMin;
-			// ofVec3f boundingBoxMax;
-			ofVec3f centerOfMass;
 			short id;
-			// bool isVisible;
+			ofVec3f centerOfMass;
 			bool isSkeletonAvailable;
 			map<XnSkeletonJoint,ofVec3f> skeletonPoints;
 
@@ -135,24 +101,13 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		static xn::UserGenerator oniUserGenerator;
 		static xn::ImageGenerator oniImageGenerator;
 
-		// OpenNI callback functions must be static, but pCookie can be used
-		// to send a pointer to the current instance. This is used in turn to 
-		// call the cb...() funcions.
-		//
-		static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
-		void cbNewUser(xn::UserGenerator & generator, XnUserID nId);
+		xn::SceneMetaData sceneMD;
+		xn::SceneMetaData playerMD;
+		xn::DepthMetaData depthMD;
+		xn::ImageMetaData oniImageGeneratorMD;
 
-		static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
-		void cbLostUser(xn::UserGenerator & generator, XnUserID nId);
-
-		static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie);
-		void cbUserCalibrationStart(xn::SkeletonCapability & capability, XnUserID nId);
-
-		static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie);
-		void cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess);
-
-		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
-		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
+		int stream_width, stream_height;
+		float ref_max_depth;
 
 		bool bInited;
 		bool bIsConnected;
@@ -188,6 +143,47 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		void updateColor();
 		void updateUserTracker();
 
+		void enableCalibratedRGBDepth();
+
 		vector<UserData> userData;
 		vector<XnSkeletonJoint> trackedJoints;
+
+
+		//
+		// OpenNI callback functions must be static, but pCookie can be used
+		// to send a pointer to the current instance. This is used in turn to 
+		// call the cb...() funcions.
+		//
+		static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
+		void cbNewUser(xn::UserGenerator & generator, XnUserID nId);
+
+		static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
+		void cbLostUser(xn::UserGenerator & generator, XnUserID nId);
+
+		static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie);
+		void cbUserCalibrationStart(xn::SkeletonCapability & capability, XnUserID nId);
+
+		static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie);
+		void cbUserCalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess);
+
+		// static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie);
+		// void cbUserPoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId);
+
 };
+
+
+static XnFloat oniColors[][3] = {
+	{0, 1, 1},
+	{0, 1, 0},
+	{0, 0, 1},
+	{1, 1, 0},
+	{1, 0, 0},
+	{1, .5, 0},
+	{.5, 1, 0},
+	{0, .5, 1},
+	{.5, 0, 1},
+	{1, 1, .5},
+	{0, 0, 0}
+};
+
+static XnUInt32 nColors = 10;

@@ -95,6 +95,11 @@ bool ofxONI1_5::init() {
 }
 
 bool ofxONI1_5::open(){
+	if(!bInited) {
+		ofLogWarning("ofxONI1_5") << "Cannot call open() before init() has succeeded.";
+		return false;
+	}
+
 	XnStatus nRetVal = XN_STATUS_OK;
 
 	//
@@ -220,28 +225,13 @@ bool ofxONI1_5::open(){
 
 void ofxONI1_5::close(){
 
-// NOT WORKING PROPERLY
-	stopGenerators();
 	oniContext.StopGeneratingAll();
+	oniDepthGenerator.Release();
+	oniUserGenerator.Release();
+	oniImageGenerator.Release();
 	oniContext.Release();
-	bNeedsUpdateDepth = false;
-	//stopThread();
 	
 	bIsConnected = false;
-}
-
-//--------------------------------------------------------------
-void ofxONI1_5::stopGenerators(){
-
-	oniDepthGenerator.StopGenerating();
-	oniDepthGenerator.Release();
-
-	oniUserGenerator.StopGenerating();
-	oniUserGenerator.Release();
-
-	oniImageGenerator.StopGenerating();
-	oniImageGenerator.Release();
-
 }
 
 void ofxONI1_5::clear(){
@@ -425,47 +415,14 @@ void ofxONI1_5::drawDepth(float x, float y, float w, float h){
 	}
 }
 
-void ofxONI1_5::drawGrayDepth(float x, float y, float w, float h){
-	if(bUseTexture){
-		grayTex.draw(x, y, w, h);
-	}
-}
-
-
-void ofxONI1_5::draw3D(){
-	// not implemented yet
-}
-
 float ofxONI1_5::getWidth(){
 	return stream_width;
 }
+
 float ofxONI1_5::getHeight(){
 	return stream_height;
 }
 
-
-bool ofxONI1_5::enableCalibratedRGBDepth(){
-	if(!oniImageGenerator.IsValid()){
-		printf("No Image generator found: cannot register viewport");
-		return false;
-	}
-
-	// Register view point to image map
-	if(oniDepthGenerator.IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)){
-
-		XnStatus result = oniDepthGenerator.GetAlternativeViewPointCap().SetViewPoint(oniImageGenerator);
-		cout << ofToString((int)result) +  "Register viewport" << endl;
-		if(result != XN_STATUS_OK){
-			return false;
-		}
-	}
-	else{
-		printf("Can't enable calibrated RGB depth, alternative viewport capability not supported");
-		return false;
-	}
-
-	return true;
-}
 
 //
 //
