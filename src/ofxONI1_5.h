@@ -5,79 +5,61 @@
 #include "XnCodecIDs.h"
 #include "XnCppWrapper.h"
 
-static XnFloat oniColors[][3] = {
-	{0, 1, 1},
-	{0, 1, 0},
-	{0, 0, 1},
-	{1, 1, 0},
-	{1, 0, 0},
-	{1, .5, 0},
-	{.5, 1, 0},
-	{0, .5, 1},
-	{.5, 0, 1},
-	{1, 1, .5},
-	{0, 0, 0}
-};
-
-static XnUInt32 nColors = 10;
-
 #include "ofxBase3DVideo.h"
 
 class ofxONI1_5 : public ofxBase3DVideo {
 	public:
 		ofxONI1_5();
 		~ofxONI1_5();
+		
+		// Enable/disable features. These should be run before init()
+		void setUseTexture(bool b); // Defaults to true
+		void setUseColorImage(bool b); // Defaults to true
+		void setUseColorizedDepthImage(bool b); // Defaults to true
+		void setUseCalibratedRGBDepth(bool b); // Defaults to true
+		void setUseUserTracker(bool b); // Defaults to true
+		void setUseUserMap(bool b); // Defaults to true
+		void setUseUserMapImage(bool b); // Defaults to true
+		void setUseSkeletonTracker(bool b); // Defaults to true
 
-		bool init(bool use_color_image = true, bool use_texture = true, bool colorize_depth_image = true, bool use_players = true, bool use_skeleton = true);
+		bool init();
 		bool open();
 		void update();
-
-		// close connection and stop grabbing images
 		void close();
-		// close generators
-		void stopGenerators();
+		void clear();
 
-		// is the connection currently open?
 		bool isConnected();
 
 		// is the current frame new? This is positive when
 		// either the depth frame or the color image is updated.
 		bool isFrameNew();
+
+
 		// Raw pixel pointer for the color image:
-		unsigned char * getPixels();
+		unsigned char* getPixels() { return colorPixels.getPixels(); }
 
 		// Raw pixel pointer for the (hue colorized or grayscale) depth image:
-		unsigned char * getDepthPixels();
+		unsigned char* getDepthPixels() { return depthPixels.getPixels(); }
 
 		// Raw pixel pointer for the raw 16 bit depth image (in mm)
-		// OpenNI 2.2 uses typedef uint16_t openni::DepthPixel
-		unsigned short * getRawDepthPixels();
-		//
-		unsigned char * getPlayersPixels();
+		// OpenNI uses short for depth data.
+		unsigned short* getRawDepthPixels() { return depthPixelsRaw.getPixels(); }
+
 		// Raw pixel pointer to float millimeter distance image:
-		float * getDistancePixels();
+		float* getDistancePixels() { return distancePixels.getPixels(); }
 
 		// ofPixel objects
-		ofPixels & getPixelsRef();
-		ofPixels & getDepthPixelsRef();
-
-		ofShortPixels & getRawDepthPixelsRef();
-		ofFloatPixels & getDistancePixelsRef();
+		ofPixels& getPixelsRef() { return colorPixels; }
+		ofPixels& getDepthPixelsRef() { return depthPixels; }
+		ofShortPixels& getRawDepthPixelsRef() { return depthPixelsRaw; }
+		ofFloatPixels& getDistancePixelsRef() { return distancePixels; }
+		ofShortPixels& getUserMapRef() { return userMap; }
 
 		// Textures:
-		// Color image as texture
-		ofTexture & getTextureReference();
-		// Depth image as texture
-		ofTexture & getDepthTextureReference();
-		//
-		ofTexture & getPlayersTextureReference();
-		// Get gray reference
-		ofTexture & getGrayTextureReference();
+		ofTexture& getTextureReference() { return colorTex; }
+		ofTexture& getDepthTextureReference() { return depthTex; }
 
-		// Enable/disable texture updates
-		void setUseTexture(bool use_texture);
-
-		// Draw the video texture
+		// Draw the color texture
 		void draw(float x, float y, float w, float h);
 		void draw(float x, float y){ draw(x, y, stream_width, stream_height); }
 		void draw(const ofPoint & point){ draw(point.x, point.y); }
@@ -191,18 +173,12 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		bool bSkeletonTrackerOn;
 
 
-		ofTexture videoTex;
+		ofTexture colorTex;
 		ofTexture depthTex;
-		ofTexture playersTex;
-		ofTexture grayTex;
-		ofTexture userMapTex;
+		ofTexture userMapImageTex;
 
-		bool bGrabberInited;
-
-		ofPixels videoPixels;
+		ofPixels colorPixels;
 		ofPixels depthPixels;
-		ofPixels playersPixels;
-		ofPixels grayPixels;
 
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;

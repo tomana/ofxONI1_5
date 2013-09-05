@@ -184,44 +184,35 @@ bool ofxONI1_5::open(){
 	stream_height = depthMD.YRes();
 	ref_max_depth = -1;
 
+	colorPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
 	depthPixelsRaw.allocate(stream_width, stream_height, 1);
+	distancePixels.allocate(stream_width, stream_height, 1);
 
-	videoPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR);
-
-	if(bColorizeDepthImage) {
+	if(bUseColorizedDepthImage) {
 		depthPixels.allocate(stream_width,stream_height, OF_IMAGE_COLOR);
 	} else {
 		depthPixels.allocate(stream_width,stream_height, 1);
 	}
-	distancePixels.allocate(stream_width, stream_height, 1);
-	playersPixels.allocate(stream_width, stream_height, OF_IMAGE_COLOR_ALPHA);
-	grayPixels.allocate(stream_width, stream_height, 1);
+	
 
-	depthPixelsRaw.set(0);
-
-	videoPixels.set(0);
-
+	colorPixels.set(0);
 	depthPixels.set(0);
-	playersPixels.set(0);
+	depthPixelsRaw.set(0);
 	distancePixels.set(0);
-	grayPixels.set(0);
 
 	if(bUseTexture){
 		depthTex.allocate(stream_width, stream_height, GL_RGB);
-		videoTex.allocate(stream_width, stream_height, GL_RGB);
-		playersTex.allocate(stream_width, stream_height, GL_RGBA);
-		grayTex.allocate(stream_width, stream_height, GL_LUMINANCE);
+		colorTex.allocate(stream_width, stream_height, GL_RGB);
 	}
 
 	if(bUserTrackerOn) {
 		userMap.allocate(stream_width, stream_height, 1);
 	}
 
-	// MAYBE THIS SHOULD NOT BE HERE
-	enableCalibratedRGBDepth();
+	if(bUseCalibratedRGBDepth) {
+		enableCalibratedRGBDepth();
+	}
 
-	//startThread(true, false);
-	
 	bIsConnected = true;
 
 	return true;
@@ -261,17 +252,15 @@ void ofxONI1_5::clear(){
 
 	depthPixelsRaw.clear();
 
-	playersPixels.clear();
-	videoPixels.clear();
+	colorPixels.clear();
 	depthPixels.clear();
 
 	distancePixels.clear();
 
 	depthTex.clear();
-	videoTex.clear();
-	playersTex.clear();
+	colorTex.clear();
 
-	bGrabberInited = false;
+	bInited = false;
 }
 
 void ofxONI1_5::update(){
@@ -350,11 +339,11 @@ void ofxONI1_5::updateDepth() {
 
 void ofxONI1_5::updateColor() {
 	// Color image is assumed to be 24 bit RGB.
-	videoPixels.setFromPixels( (unsigned char* ) oniImageGeneratorMD.Data(), 
+	colorPixels.setFromPixels( (unsigned char* ) oniImageGeneratorMD.Data(), 
 			oniImageGeneratorMD.XRes(), oniImageGeneratorMD.YRes(), OF_IMAGE_COLOR);
 
 	if(bUseTexture) {
-		videoTex.loadData(videoPixels);
+		colorTex.loadData(colorPixels);
 	}
 }
 
@@ -408,74 +397,25 @@ bool ofxONI1_5::isFrameNew(){
 	}
 }
 
-unsigned char * ofxONI1_5::getPixels(){
-	return videoPixels.getPixels();
-}
-
-unsigned char * ofxONI1_5::getDepthPixels(){
-	return depthPixels.getPixels();
-}
-
-unsigned short * ofxONI1_5::getRawDepthPixels(){
-	return depthPixelsRaw.getPixels();
-}
-
-float * ofxONI1_5::getDistancePixels(){
-	return distancePixels.getPixels();
-}
-
-unsigned char * ofxONI1_5::getPlayersPixels(){
-	return playersPixels.getPixels();
-}
-
-
-ofPixels & ofxONI1_5::getPixelsRef(){
-	return videoPixels;
-}
-
-ofPixels & ofxONI1_5::getDepthPixelsRef(){
-	return depthPixels;
-}
-
-ofShortPixels & ofxONI1_5::getRawDepthPixelsRef(){
-	return depthPixelsRaw;
-}
-
-ofFloatPixels & ofxONI1_5::getDistancePixelsRef(){
-	return distancePixels;
-}
-
-ofTexture & ofxONI1_5::getTextureReference(){
-	if(!videoTex.bAllocated()){
-		ofLogWarning("ofxONI2") << "getTextureReference video texture not allocated";
+void ofxONI1_5::enableCalibratedRGBDepth(){
+	if(!oniImageGenerator.IsValid()){
+		ofLogWarning("ofxONI1_5") << "useCalibratedRGBDepth: No Image generator found: cannot register viewport";
 	}
 
-	return videoTex;
-}
-
-ofTexture & ofxONI1_5::getDepthTextureReference(){
-	if(!depthTex.bAllocated()){
-		ofLogWarning("ofxONI2") << "getDepthTextureReference depth texture not allocated";
+	// Register view point to image map
+	if(oniDepthGenerator.IsCapabilitySupported(XN_CAPABILITY_ALTERNATIVE_VIEW_POINT)) {
+		XnStatus result = oniDepthGenerator.GetAlternativeViewPointCap().SetViewPoint(oniImageGenerator);
+		if(result != XN_STATUS_OK) {
+			ofLogWarning("ofxONI1_5") << "useCalibratedRGBDepth failed.";
+		}
+	} else {
+		ofLogWarning("ofxONI1_5") << "Can't enable calibrated RGB depth, alternative viewport capability not supported";
 	}
-
-	return depthTex;
-}
-
-ofTexture & ofxONI1_5::getPlayersTextureReference(){
-	return playersTex;
-}
-
-ofTexture & ofxONI1_5::getGrayTextureReference(){
-	return grayTex;
-}
-
-void ofxONI1_5::setUseTexture(bool use_texture){
-	bUseTexture = use_texture;
 }
 
 void ofxONI1_5::draw(float x, float y, float w, float h){
-	if(bUseTexture && bGrabVideo){
-		videoTex.draw(x, y, w, h);
+	if(bUseTexture && bUseColorImage && bColorOn){
+		colorTex.draw(x, y, w, h);
 	}
 }
 
