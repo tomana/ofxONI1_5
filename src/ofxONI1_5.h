@@ -38,8 +38,7 @@ static XnUInt32 nColors = 10;
 
 #include "ofxBase3DVideo.h"
 
-class ofxONI1_5 : public ofxBase3DVideo,
-	protected ofThread {
+class ofxONI1_5 : public ofxBase3DVideo {
 	public:
 		ofxONI1_5();
 		~ofxONI1_5();
@@ -218,6 +217,11 @@ class ofxONI1_5 : public ofxBase3DVideo,
 		bool bDrawSkeleton;
 		bool bDrawPlayers;
 
+		bool bDepthOn;
+		bool bColorOn;
+		bool bUserTrackerOn;
+		bool bIsConnected;
+
 		bool bIsFrameNew;
 		bool bNeedsUpdateColor;
 		bool bNeedsUpdateDepth;
@@ -241,11 +245,5 @@ class ofxONI1_5 : public ofxBase3DVideo,
 
 		ofShortPixels depthPixelsRawBack;
 		ofPixels videoPixelsBack;
-
-	private:
-		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
-		// to open the device instead in subclass ofxNiTEUserTracker.
-
-		virtual void threadedFunction();
 
 };

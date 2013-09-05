@@ -13,6 +13,7 @@ XnChar ofxONI1_5::g_strPose[20] = "";
 ofxONI1_5::ofxONI1_5(){
 	bNeedsUpdateDepth = false;
 	bNeedsUpdateColor = false;
+	bIsConnected = false;
 
 }
 
@@ -45,6 +46,7 @@ bool ofxONI1_5::open(){
 	//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_DEPTH, g_DepthGenerator);
 	nRetVal = g_DepthGenerator.Create(g_Context);
 	CHECK_RC(nRetVal, "Find depth generator");
+	bDepthOn = true;
 
 	if(bDrawPlayers){
 		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_USER, g_UserGenerator);
@@ -53,12 +55,14 @@ bool ofxONI1_5::open(){
 			nRetVal = g_UserGenerator.Create(g_Context);
 			CHECK_RC(nRetVal, "Find user generator");
 		}
+		bUserTrackerOn = true;
 	}
 	if(bGrabVideo){
 		//printf("FindExistingNode\n");
 		//nRetVal = g_Context.FindExistingNode(XN_NODE_TYPE_IMAGE, g_image);
 		nRetVal = g_image.Create(g_Context);
 		CHECK_RC(nRetVal, "Find image generator");
+		bColorOn = true;
 	}
 
 	nRetVal = g_Context.StartGeneratingAll();
@@ -139,7 +143,9 @@ bool ofxONI1_5::open(){
 	// MAYBE THIS SHOULD NOT BE HERE
 	enableCalibratedRGBDepth();
 
-	startThread(true, false);
+	//startThread(true, false);
+	
+	bIsConnected = true;
 
 	return true;
 }
@@ -151,7 +157,9 @@ void ofxONI1_5::close(){
 	g_Context.StopGeneratingAll();
 	g_Context.Release();
 	bNeedsUpdateDepth = false;
-	stopThread();
+	//stopThread();
+	
+	bIsConnected = false;
 }
 
 //--------------------------------------------------------------
@@ -191,48 +199,27 @@ void ofxONI1_5::clear(){
 
 void ofxONI1_5::update(){
 
-	bIsFrameNew = true;
-
-	if(bNeedsUpdateDepth){
+	if(bDepthOn && g_DepthGenerator.IsNewDataAvailable()) {
+		bIsFrameNew = true;
+		g_DepthGenerator.WaitAndUpdateData();
 		g_DepthGenerator.GetMetaData(depthMD);
-		g_UserGenerator.GetUserPixels(0, sceneMD);
+		//updateDepth();
+	}
+
+	if(bColorOn && g_image.IsNewDataAvailable()) {
+		bIsFrameNew = true;
+		g_image.WaitAndUpdateData();
 		g_image.GetMetaData(g_imageMD);
-		calculateMaps();
-		bNeedsUpdateDepth = false;
-
-		if(bUseTexture){
-			depthTex.loadData(depthPixels.getPixels(), stream_width, stream_height, GL_RGB);
-			videoTex.loadData(videoPixels.getPixels(), stream_width, stream_height, GL_RGB);
-			playersTex.loadData(playersPixels.getPixels(), stream_width, stream_height, GL_RGBA);
-			grayTex.loadData(grayPixels.getPixels(), stream_width, stream_height, GL_LUMINANCE);
-		}
-	}
-	else{
-
+		//updateColor();
 	}
 
-
-}
-
-
-
-void ofxONI1_5::threadedFunction(){
-	int kinect_changed_index;
-	XnStatus rc;
-
-	ofLogVerbose("ofxONI1_5") << "Starting ofxONI1_5 update thread";
-
-	while(isThreadRunning()){
-
-		rc = g_Context.WaitAndUpdateAll();
-
-		if(rc == XN_STATUS_OK){
-			bNeedsUpdateColor = true;
-			bNeedsUpdateDepth = true;
-		}
+	if(bUserTrackerOn && g_UserGenerator.IsNewDataAvailable()) {
+		bIsFrameNew = true;
+		g_UserGenerator.WaitAndUpdateData();
+		g_UserGenerator.GetUserPixels(0,sceneMD);
+		//updateUserTracker();
 	}
 
-	ofLogVerbose("ofxONI2") << "Ending ofxONI2 update thread";
 }
 
 void ofxONI1_5::calculateMaps(){
@@ -445,11 +432,12 @@ void ofxONI1_5::drawSkeletons(int x, int y){
 }
 
 bool ofxONI1_5::isConnected(){
-	return isThreadRunning();
+	return bIsConnected;//isThreadRunning();
 }
 
 bool ofxONI1_5::isFrameNew(){
-	if(isThreadRunning() && bIsFrameNew){
+	//if(isThreadRunning() && bIsFrameNew){
+	if(bIsFrameNew) {
 		bIsFrameNew = false;
 		return true;
 	}
