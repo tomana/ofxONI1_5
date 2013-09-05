@@ -11,67 +11,56 @@ static xn::UserGenerator g_UserGenerator;
 static xn::ImageGenerator g_image;
 
 #define CHECK_RC(nRetVal, what)										\
-	if (nRetVal != XN_STATUS_OK)									\
+	if(nRetVal != XN_STATUS_OK)									   \
 	{																\
-		printf("%s failed: %s\n", what, xnGetStatusString(nRetVal));\
+		printf("%s failed: %s\n", what, xnGetStatusString(nRetVal)); \
 	}
 
 static XnBool g_bNeedPose = FALSE;
 static XnChar g_strPose[20] = "";
 
-static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
-{
+static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
 	printf("New User %d\n", nId);
 
-	if (g_bNeedPose)
-	{
+	if(g_bNeedPose){
 		g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
 	}
-	else
-	{
+	else{
 		g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 	}
-};
-static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator& generator, XnUserID nId, void* pCookie)
-{
+}
+static void XN_CALLBACK_TYPE User_LostUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie){
 	printf("Lost User id: %i\n", (unsigned int)nId);
-};
+}
 
 // Callback: Detected a pose
-static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability& capability, const XnChar* strPose, XnUserID nId, void* pCookie)
-{
+static void XN_CALLBACK_TYPE UserPose_PoseDetected(xn::PoseDetectionCapability & capability, const XnChar * strPose, XnUserID nId, void * pCookie){
 	printf("Pose %s detected for user %d\n", strPose, nId);
 	g_UserGenerator.GetPoseDetectionCap().StopPoseDetection(nId);
 	g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
-};
+}
 // Callback: Started calibration
-static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability& capability, XnUserID nId, void* pCookie)
-{
+static void XN_CALLBACK_TYPE UserCalibration_CalibrationStart(xn::SkeletonCapability & capability, XnUserID nId, void * pCookie){
 	printf("Calibration started for user %d\n", nId);
-};
+}
 // Callback: Finished calibration
-static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability& capability, XnUserID nId, XnBool bSuccess, void* pCookie)
-{
-	if (bSuccess)
-	{
+static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapability & capability, XnUserID nId, XnBool bSuccess, void * pCookie){
+	if(bSuccess){
 		// Calibration succeeded
 		printf("Calibration complete, start tracking user %d\n", nId);
 		g_UserGenerator.GetSkeletonCap().StartTracking(nId);
 	}
-	else
-	{
+	else{
 		// Calibration failed
 		printf("Calibration failed for user %d\n", nId);
-		if (g_bNeedPose)
-		{
+		if(g_bNeedPose){
 			g_UserGenerator.GetPoseDetectionCap().StartPoseDetection(g_strPose, nId);
 		}
-		else
-		{
+		else{
 			g_UserGenerator.GetSkeletonCap().RequestCalibration(nId, TRUE);
 		}
 	}
-};
+}
 
 
 //#define SAMPLE_XML_PATH "data/Sample-User.xml"
@@ -81,30 +70,31 @@ static void XN_CALLBACK_TYPE UserCalibration_CalibrationEnd(xn::SkeletonCapabili
 
 static XnFloat oniColors[][3] =
 {
-	{0,1,1},
-	{0,1,0},
-	{0,0,1},
-	{1,1,0},
-	{1,0,0},
-	{1,.5,0},
-	{.5,1,0},
-	{0,.5,1},
-	{.5,0,1},
-	{1,1,.5},
-	{0,0,0}
+	{0, 1, 1},
+	{0, 1, 0},
+	{0, 0, 1},
+	{1, 1, 0},
+	{1, 0, 0},
+	{1, .5, 0},
+	{.5, 1, 0},
+	{0, .5, 1},
+	{.5, 0, 1},
+	{1, 1, .5},
+	{0, 0, 0}
 };
 
 static XnUInt32 nColors = 10;
 
 #include "ofxBase3DVideo.h"
 
-class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
-    public:
-        ofxONI1_5();
-        ~ofxONI1_5();
+class ofxONI1_5 : public ofxBase3DVideo,
+	protected ofThread {
+	public:
+		ofxONI1_5();
+		~ofxONI1_5();
 
-        bool init(bool use_color_image = true, bool use_texture = true, bool colorize_depth_image = true, bool use_players = true, bool use_skeleton = true);
-        bool open();
+		bool init(bool use_color_image = true, bool use_texture = true, bool colorize_depth_image = true, bool use_players = true, bool use_skeleton = true);
+		bool open();
 		void update();
 
 		// close connection and stop grabbing images
@@ -119,71 +109,95 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 		// either the depth frame or the color image is updated.
 		bool isFrameNew();
 		// Raw pixel pointer for the color image:
-		unsigned char* getPixels();
+		unsigned char * getPixels();
 
 		// Raw pixel pointer for the (hue colorized or grayscale) depth image:
-		unsigned char* getDepthPixels();
+		unsigned char * getDepthPixels();
 
 		// Raw pixel pointer for the raw 16 bit depth image (in mm)
 		// OpenNI 2.2 uses typedef uint16_t openni::DepthPixel
-		unsigned short* getRawDepthPixels();
-        //
-        unsigned char* getPlayersPixels();
+		unsigned short * getRawDepthPixels();
+		//
+		unsigned char * getPlayersPixels();
 		// Raw pixel pointer to float millimeter distance image:
-		float* getDistancePixels();
+		float * getDistancePixels();
 
 		// ofPixel objects
-		ofPixels& getPixelsRef();
-		ofPixels& getDepthPixelsRef();
+		ofPixels & getPixelsRef();
+		ofPixels & getDepthPixelsRef();
 
-		ofShortPixels& getRawDepthPixelsRef();
-		ofFloatPixels& getDistancePixelsRef();
+		ofShortPixels & getRawDepthPixelsRef();
+		ofFloatPixels & getDistancePixelsRef();
 
-        // Textures:
+		// Textures:
 		// Color image as texture
-		ofTexture& getTextureReference();
+		ofTexture & getTextureReference();
 		// Depth image as texture
-		ofTexture& getDepthTextureReference();
+		ofTexture & getDepthTextureReference();
 		//
-		ofTexture& getPlayersTextureReference();
-        // Get gray reference
-		ofTexture& getGrayTextureReference();
+		ofTexture & getPlayersTextureReference();
+		// Get gray reference
+		ofTexture & getGrayTextureReference();
 
-        // Enable/disable texture updates
+		// Enable/disable texture updates
 		void setUseTexture(bool use_texture);
 
-        // Draw the video texture
+		// Draw the video texture
 		void draw(float x, float y, float w, float h);
-        void draw(float x, float y) {draw(x,y,stream_width,stream_height);};
-        void draw(const ofPoint& point) {draw(point.x, point.y);};
-        void draw(const ofRectangle& rect) {draw(rect.x, rect.y, rect.width, rect.height);};
+		void draw(float x, float y){
+			draw(x, y, stream_width, stream_height);
+		}
+		void draw(const ofPoint & point){
+			draw(point.x, point.y);
+		}
+		void draw(const ofRectangle & rect){
+			draw(rect.x, rect.y, rect.width, rect.height);
+		}
 
-        // Draw the depth texture
+		// Draw the depth texture
 		void drawDepth(float x, float y, float w, float h);
-        void drawDepth(float x, float y) {drawDepth(x,y,stream_width,stream_height);};
-        void drawDepth(const ofPoint& point) {drawDepth(point.x, point.y);};
-        void drawDepth(const ofRectangle& rect) {drawDepth(rect.x, rect.y, rect.width, rect.height);};
+		void drawDepth(float x, float y){
+			drawDepth(x, y, stream_width, stream_height);
+		}
+		void drawDepth(const ofPoint & point){
+			drawDepth(point.x, point.y);
+		}
+		void drawDepth(const ofRectangle & rect){
+			drawDepth(rect.x, rect.y, rect.width, rect.height);
+		}
 
-        // Draw player image
+		// Draw player image
 		void drawPlayers(float x, float y, float w, float h);
-        void drawPlayers(float x, float y) {drawPlayers(x,y,stream_width,stream_height);};
-        void drawPlayers(const ofPoint& point) { drawPlayers(point.x, point.y);};
-        void drawPlayers(const ofRectangle& rect) {drawPlayers(rect.x, rect.y, rect.width, rect.height);};
+		void drawPlayers(float x, float y){
+			drawPlayers(x, y, stream_width, stream_height);
+		}
+		void drawPlayers(const ofPoint & point){
+			drawPlayers(point.x, point.y);
+		}
+		void drawPlayers(const ofRectangle & rect){
+			drawPlayers(rect.x, rect.y, rect.width, rect.height);
+		}
 
-        // Draw gray depth texture
+		// Draw gray depth texture
 		void drawGrayDepth(float x, float y, float w, float h);
-        void drawGrayDepth(float x, float y) {drawGrayDepth(x,y,stream_width,stream_height);};
-        void drawGrayDepth(const ofPoint& point) {drawGrayDepth(point.x, point.y);};
-        void drawGrayDepth(const ofRectangle& rect) {drawGrayDepth(rect.x, rect.y, rect.width, rect.height);};
+		void drawGrayDepth(float x, float y){
+			drawGrayDepth(x, y, stream_width, stream_height);
+		}
+		void drawGrayDepth(const ofPoint & point){
+			drawGrayDepth(point.x, point.y);
+		}
+		void drawGrayDepth(const ofRectangle & rect){
+			drawGrayDepth(rect.x, rect.y, rect.width, rect.height);
+		}
 
-        // Not implemented. Should probably not be here.
-        void draw3D();
+		// Not implemented. Should probably not be here.
+		void draw3D();
 
-        float getWidth();
+		float getWidth();
 		float getHeight();
 
 
-        // Functions for skeleton parts.
+		// Functions for skeleton parts.
 		void drawSkeletonPt(XnUserID player, XnSkeletonJoint eJoint, int x, int y);
 		void drawSkeletons(int x, int y);
 
@@ -194,14 +208,14 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 		xn::DepthMetaData depthMD;
 		xn::ImageMetaData g_imageMD;
 
-        int millis;
+		int millis;
 
 		float depthHist[MAX_DEPTH];
-		unsigned char gColorBuffer[640*480*3];         // BGRA
+		unsigned char gColorBuffer[640 * 480 * 3];         // BGRA
 
-        bool color_depth_bool;
+		bool color_depth_bool;
 
-        float counter;
+		float counter;
 
 		int width, height;
 		int stream_width, stream_height;
@@ -219,32 +233,32 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 
 		void generate_grid();
 
-        		// clear resources
+		// clear resources
 		void clear();
 
-        ofVec3f playerjoints[15][25];
-        vector<int> activeplayers;
+		ofVec3f playerjoints[15][25];
+		vector <int> activeplayers;
 
-    protected:
+	protected:
 
-        // Players
-        XnUserID* aUsers;
-        XnUInt16 nUsers;
-        XnPoint3D* com;
-        //
+		// Players
+		XnUserID * aUsers;
+		XnUInt16 nUsers;
+		XnPoint3D * com;
+		//
 
-        bool bUseTexture;
-        bool bGrabVideo;
-        bool bColorizeDepthImage;
-        bool bDrawSkeleton;
-        bool bDrawPlayers;
+		bool bUseTexture;
+		bool bGrabVideo;
+		bool bColorizeDepthImage;
+		bool bDrawSkeleton;
+		bool bDrawPlayers;
 
-        bool bIsFrameNew;
+		bool bIsFrameNew;
 		bool bNeedsUpdateColor;
 		bool bNeedsUpdateDepth;
 		bool bUpdateTex;
 
-        ofTexture videoTex;
+		ofTexture videoTex;
 		ofTexture depthTex;
 		ofTexture playersTex;
 		ofTexture grayTex;
@@ -260,10 +274,10 @@ class ofxONI1_5 : public ofxBase3DVideo, protected ofThread {
 		ofShortPixels depthPixelsRaw;
 		ofFloatPixels distancePixels;
 
-        ofShortPixels depthPixelsRawBack;
+		ofShortPixels depthPixelsRawBack;
 		ofPixels videoPixelsBack;
 
-    	private:
+	private:
 		// The actual opening commands, returning video modes. Given as a seperate function to allow for NiTE
 		// to open the device instead in subclass ofxNiTEUserTracker.
 
