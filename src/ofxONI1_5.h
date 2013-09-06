@@ -99,6 +99,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
 
+		vector<UserData>& getUserData() { return userData; }
 		struct UserData {
 			short id;
 			ofVec3f centerOfMass;
