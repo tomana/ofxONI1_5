@@ -362,9 +362,9 @@ void ofxONI1_5::updateUserTracker() {
 
 			for(int i = 0; i < trackedJoints.size(); i++) {
 				XnSkeletonJoint joint = trackedJoints[i];
-				XnSkeletonJointPosition jointdata;
-				skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
-				d.skeletonPoints[joint] = toOf(jointdata.position);
+				XnSkeletonJointTransformation jointdata;
+				skeleton.GetSkeletonJoint(d.id, joint, jointdata);
+				d.skeletonPoints[joint] = toOf(jointdata.position.position);
 
 				debugString << "\tJoint " << joint << " at " << d.skeletonPoints[joint] << endl;
 			}
