@@ -127,7 +127,9 @@ bool ofxONI1_5::open(){
 		if(nRetVal != XN_STATUS_OK){
 			ofLogWarning("ofxONI1_5") << "Unable to open video generator stream: " << xnGetStatusString(nRetVal);
 			return false;
-		} 
+		} else {
+			bColorOn = true;
+		}
 	}
 
 	nRetVal = oniContext.StartGeneratingAll();
