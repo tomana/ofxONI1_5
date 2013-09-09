@@ -355,22 +355,33 @@ void ofxONI1_5::updateUserTracker() {
 		XnPoint3D com;
 		oniUserGenerator.GetCoM(d.id, com);
 		d.centerOfMass = toOf(com);
-		debugString << "User #" << d.id << ", center of mass: " << d.centerOfMass << endl;
+		d.isVisible = (d.centerOfMass != ofVec3f(0,0,0));
+
+		debugString << "User #" << d.id << ", center of mass: " << d.centerOfMass << ", visible: " <<
+			(d.isVisible ? "yes":"no" ) << endl;
 
 		if(bUseSkeletonTracker) {
 			xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
 
+
 			d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
 			debugString << "\tSkeleton available: " << (d.isSkeletonAvailable ? "yes" : "no") << endl;
 
-			for(int i = 0; i < trackedJoints.size(); i++) {
+			float sumconfidence = 0;
+			for(unsigned int i = 0; i < trackedJoints.size(); i++) {
 				XnSkeletonJoint joint = trackedJoints[i];
 				XnSkeletonJointTransformation jointdata;
 				skeleton.GetSkeletonJoint(d.id, joint, jointdata);
 				d.skeletonPoints[joint] = toOf(jointdata.position.position);
+				d.skeletonPointsConfidence[joint] = jointdata.position.fConfidence;
+				d.skeletonOrientations[joint] = toOf(jointdata.orientation.orientation);
+				d.skeletonOrientationsConfidence[joint] = jointdata.position.fConfidence;
+				sumconfidence += (float) jointdata.position.fConfidence;
 
 				debugString << "\tJoint " << joint << " at " << d.skeletonPoints[joint] << endl;
 			}
+			d.avgPointConfidence = sumconfidence / trackedJoints.size();
+			debugString << "\tAverage joint confidence: " << d.avgPointConfidence << endl;
 		} else {
 			d.isSkeletonAvailable = false;
 		}
