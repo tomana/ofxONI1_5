@@ -13,6 +13,7 @@ ofxONI1_5::ofxONI1_5(){
 	bUseUserMap = true;
 	bUseUserMapImage = true;
 	bUseSkeletonTracker = true;
+	bUseCalibratedRGBDepth = true;
 
 	bDepthOn = false;
 	bColorOn = false;
