@@ -13,6 +13,7 @@ ofxONI1_5::ofxONI1_5(){
 	bUseUserMap = true;
 	bUseUserMapImage = true;
 	bUseSkeletonTracker = true;
+	bUseCalibratedRGBDepth = true;
 
 	bDepthOn = false;
 	bColorOn = false;
@@ -127,7 +128,9 @@ bool ofxONI1_5::open(){
 		if(nRetVal != XN_STATUS_OK){
 			ofLogWarning("ofxONI1_5") << "Unable to open video generator stream: " << xnGetStatusString(nRetVal);
 			return false;
-		} 
+		} else {
+			bColorOn = true;
+		}
 	}
 
 	nRetVal = oniContext.StartGeneratingAll();
@@ -141,13 +144,14 @@ bool ofxONI1_5::open(){
 		if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
 			ofLogWarning("ofxONI1_5") << "UserTracker: Skeleton capability not supported.";
 		} else {
-			XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 
+			XnCallbackHandle hUserCallbacks;
 			oniUserGenerator.RegisterUserCallbacks(
 					ofxONI1_5::User_NewUser, 
 					ofxONI1_5::User_LostUser, 
 					this, hUserCallbacks);
 
+			XnCallbackHandle hCalibrationCallbacks;
 			oniUserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(
 					ofxONI1_5::UserCalibration_CalibrationStart, 
 					ofxONI1_5::UserCalibration_CalibrationEnd, 
@@ -155,13 +159,14 @@ bool ofxONI1_5::open(){
 
 			if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()) {
 				ofLogWarning("ofxONI1_5") << "UserTracker: NeedPoseForCalibration returned true, update your version of OpenNI.";
-				//setUseUserTracker(false);
+				setUseUserTracker(false);
 			}
 
 			// 
 			// Since OpenNI update, pose is not needed for skeleton calibration.
 			// Will not implement any pose detection as of now.
 			//
+			// XnCallbackHandle hPoseCallbacks;
 			// if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
 			// 	g_bNeedPose = TRUE;
 			// 	if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
@@ -350,22 +355,33 @@ void ofxONI1_5::updateUserTracker() {
 		XnPoint3D com;
 		oniUserGenerator.GetCoM(d.id, com);
 		d.centerOfMass = toOf(com);
-		debugString << "User #" << d.id << ", center of mass: " << d.centerOfMass << endl;
+		d.isVisible = (d.centerOfMass != ofVec3f(0,0,0));
+
+		debugString << "User #" << d.id << ", center of mass: " << d.centerOfMass << ", visible: " <<
+			(d.isVisible ? "yes":"no" ) << endl;
 
 		if(bUseSkeletonTracker) {
 			xn::SkeletonCapability skeleton = oniUserGenerator.GetSkeletonCap();
 
+
 			d.isSkeletonAvailable = skeleton.IsTracking(d.id); // Is this correct?
 			debugString << "\tSkeleton available: " << (d.isSkeletonAvailable ? "yes" : "no") << endl;
 
-			for(int i = 0; i < trackedJoints.size(); i++) {
+			float sumconfidence = 0;
+			for(unsigned int i = 0; i < trackedJoints.size(); i++) {
 				XnSkeletonJoint joint = trackedJoints[i];
-				XnSkeletonJointPosition jointdata;
-				skeleton.GetSkeletonJointPosition(d.id, joint, jointdata);
-				d.skeletonPoints[joint] = toOf(jointdata.position);
+				XnSkeletonJointTransformation jointdata;
+				skeleton.GetSkeletonJoint(d.id, joint, jointdata);
+				d.skeletonPoints[joint] = toOf(jointdata.position.position);
+				d.skeletonPointsConfidence[joint] = jointdata.position.fConfidence;
+				d.skeletonOrientations[joint] = toOf(jointdata.orientation.orientation);
+				d.skeletonOrientationsConfidence[joint] = jointdata.position.fConfidence;
+				sumconfidence += (float) jointdata.position.fConfidence;
 
 				debugString << "\tJoint " << joint << " at " << d.skeletonPoints[joint] << endl;
 			}
+			d.avgPointConfidence = sumconfidence / trackedJoints.size();
+			debugString << "\tAverage joint confidence: " << d.avgPointConfidence << endl;
 		} else {
 			d.isSkeletonAvailable = false;
 		}
@@ -443,9 +459,9 @@ void ofxONI1_5::drawSkeletonOverlay(float x, float y, float w, float h) {
 		ofPushStyle();
 		ofFill();
 		ofSetColor(ofColor::red,255);
-		for(int i = 0; i < userData.size(); i++) {
+		for(unsigned int i = 0; i < userData.size(); i++) {
 			if(userData[i].isSkeletonAvailable) {
-				for(int j = 0; j < trackedJoints.size(); j++) {
+				for(unsigned int j = 0; j < trackedJoints.size(); j++) {
 					ofVec3f p = userData[i].skeletonPoints[trackedJoints[j]];
 					p = coordsRealToProjective(p);
 					p.x = ofMap(p.x, 0, stream_width, 0, w)   + x;

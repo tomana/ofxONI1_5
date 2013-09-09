@@ -91,6 +91,11 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		ofVec3f toOf(XnVector3D p) { return ofVec3f(p.X, p.Y, p.Z); }
 
+		ofMatrix3x3 toOf(XnMatrix3X3 p) { 
+			XnFloat* e = p.elements; 
+			return ofMatrix3x3(e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]);
+		}
+
 		// Convert OpenNI "real" coordinates to camera pixel coordinates and the reverse
 		ofVec3f coordsRealToProjective(ofVec3f v);
 		ofVec3f coordsProjectiveToReal(ofVec3f v);
@@ -99,14 +104,20 @@ class ofxONI1_5 : public ofxBase3DVideo {
 		ofEvent<short> newUserEvent;
 		ofEvent<short> lostUserEvent;
 
-		vector<UserData>& getUserData() { return userData; }
 		struct UserData {
 			short id;
 			ofVec3f centerOfMass;
 			bool isSkeletonAvailable;
+			bool isVisible;
+			float avgPointConfidence;
 			map<XnSkeletonJoint,ofVec3f> skeletonPoints;
+			map<XnSkeletonJoint,ofMatrix3x3> skeletonOrientations;
+			map<XnSkeletonJoint,float> skeletonPointsConfidence;
+			map<XnSkeletonJoint,float> skeletonOrientationsConfidence;
 
 		};
+
+		vector<UserData>& getUserData() { return userData; }
 
 	protected:
 
