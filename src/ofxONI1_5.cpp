@@ -144,13 +144,14 @@ bool ofxONI1_5::open(){
 		if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_SKELETON)){
 			ofLogWarning("ofxONI1_5") << "UserTracker: Skeleton capability not supported.";
 		} else {
-			XnCallbackHandle hUserCallbacks, hCalibrationCallbacks, hPoseCallbacks;
 
+			XnCallbackHandle hUserCallbacks;
 			oniUserGenerator.RegisterUserCallbacks(
 					ofxONI1_5::User_NewUser, 
 					ofxONI1_5::User_LostUser, 
 					this, hUserCallbacks);
 
+			XnCallbackHandle hCalibrationCallbacks;
 			oniUserGenerator.GetSkeletonCap().RegisterCalibrationCallbacks(
 					ofxONI1_5::UserCalibration_CalibrationStart, 
 					ofxONI1_5::UserCalibration_CalibrationEnd, 
@@ -158,13 +159,14 @@ bool ofxONI1_5::open(){
 
 			if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()) {
 				ofLogWarning("ofxONI1_5") << "UserTracker: NeedPoseForCalibration returned true, update your version of OpenNI.";
-				//setUseUserTracker(false);
+				setUseUserTracker(false);
 			}
 
 			// 
 			// Since OpenNI update, pose is not needed for skeleton calibration.
 			// Will not implement any pose detection as of now.
 			//
+			// XnCallbackHandle hPoseCallbacks;
 			// if(oniUserGenerator.GetSkeletonCap().NeedPoseForCalibration()){
 			// 	g_bNeedPose = TRUE;
 			// 	if(!oniUserGenerator.IsCapabilitySupported(XN_CAPABILITY_POSE_DETECTION)){
@@ -446,9 +448,9 @@ void ofxONI1_5::drawSkeletonOverlay(float x, float y, float w, float h) {
 		ofPushStyle();
 		ofFill();
 		ofSetColor(ofColor::red,255);
-		for(int i = 0; i < userData.size(); i++) {
+		for(unsigned int i = 0; i < userData.size(); i++) {
 			if(userData[i].isSkeletonAvailable) {
-				for(int j = 0; j < trackedJoints.size(); j++) {
+				for(unsigned int j = 0; j < trackedJoints.size(); j++) {
 					ofVec3f p = userData[i].skeletonPoints[trackedJoints[j]];
 					p = coordsRealToProjective(p);
 					p.x = ofMap(p.x, 0, stream_width, 0, w)   + x;
