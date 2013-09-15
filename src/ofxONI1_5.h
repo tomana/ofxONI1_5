@@ -1,3 +1,5 @@
+#pragma once
+
 #include "ofMain.h"
 #undef Status
 #undef STATUS
@@ -11,7 +13,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 	public:
 		ofxONI1_5();
 		~ofxONI1_5();
-		
+
 		// Enable/disable features. These should be run before init()
 		void setUseTexture(bool b); // Defaults to true
 		void setUseColorImage(bool b); // Defaults to true
@@ -91,8 +93,8 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		ofVec3f toOf(XnVector3D p) { return ofVec3f(p.X, p.Y, p.Z); }
 
-		ofMatrix3x3 toOf(XnMatrix3X3 p) { 
-			XnFloat* e = p.elements; 
+		ofMatrix3x3 toOf(XnMatrix3X3 p) {
+			XnFloat* e = p.elements;
 			return ofMatrix3x3(e[0],e[1],e[2],e[3],e[4],e[5],e[6],e[7],e[8]);
 		}
 
@@ -177,7 +179,7 @@ class ofxONI1_5 : public ofxBase3DVideo {
 
 		//
 		// OpenNI callback functions must be static, but pCookie can be used
-		// to send a pointer to the current instance. This is used in turn to 
+		// to send a pointer to the current instance. This is used in turn to
 		// call the cb...() funcions.
 		//
 		static void XN_CALLBACK_TYPE User_NewUser(xn::UserGenerator & generator, XnUserID nId, void * pCookie);
